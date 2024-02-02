@@ -3,109 +3,127 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkWindow" id="Login">
+    <property name="width-request">500</property>
+    <property name="height-request">300</property>
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Contra - Setup</property>
     <property name="resizable">False</property>
     <property name="window-position">center</property>
-    <property name="default-width">600</property>
+    <property name="default-width">500</property>
     <property name="default-height">300</property>
     <property name="urgency-hint">True</property>
     <property name="gravity">north</property>
     <child>
-      <object class="GtkBox" id="_EncryptionMethodSelectView">
+      <object class="GtkBox" id="_Container">
+        <property name="width-request">500</property>
+        <property name="height-request">300</property>
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="hexpand">True</property>
-        <property name="vexpand">True</property>
+        <property name="resize-mode">immediate</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">25</property>
-        <property name="baseline-position">bottom</property>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkBox" id="_MethodSelectBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">25</property>
+            <property name="margin-bottom">15</property>
+            <property name="hexpand">True</property>
             <property name="vexpand">True</property>
-            <property name="label" translatable="yes">Encryption Method</property>
-            <property name="justify">center</property>
-            <attributes>
-              <attribute name="weight" value="ultraheavy"/>
-              <attribute name="scale" value="2"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">center</property>
             <property name="orientation">vertical</property>
-            <property name="spacing">5</property>
+            <property name="spacing">25</property>
+            <property name="baseline-position">bottom</property>
             <child>
-              <object class="GtkRadioButton" id="_KeySelect">
-                <property name="label" translatable="yes">Key</property>
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="draw-indicator">True</property>
-                <property name="group">_NoneSelect</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">25</property>
+                <property name="vexpand">True</property>
+                <property name="label" translatable="yes">Encryption Method</property>
+                <property name="justify">center</property>
+                <attributes>
+                  <attribute name="weight" value="ultraheavy"/>
+                  <attribute name="scale" value="2"/>
+                </attributes>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="_PasswordSelect">
-                <property name="label" translatable="yes">Password</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="draw-indicator">True</property>
-                <property name="group">_NoneSelect</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkRadioButton" id="_KeySelect">
+                    <property name="label" translatable="yes">Key</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">_NoneSelect</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="_PasswordSelect">
+                    <property name="label" translatable="yes">Password</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">_NoneSelect</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="_NoneSelect">
+                    <property name="label" translatable="yes">None</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkRadioButton" id="_NoneSelect">
-                <property name="label" translatable="yes">No encryption</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="active">True</property>
-                <property name="draw-indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="_ControlButtonContainer">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-start">15</property>
             <property name="margin-end">15</property>
             <property name="margin-bottom">10</property>
-            <property name="spacing">10</property>
+            <property name="spacing">25</property>
             <child>
               <object class="GtkButton" id="_CancelBtn">
                 <property name="label" translatable="yes">Cancel</property>
@@ -165,10 +183,118 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>
+    </child>
+  </object>
+  <object class="GtkBox" id="_KeyBox">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-top">25</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
+        <property name="label" translatable="yes"> </property>
+        <property name="justify">center</property>
+        <attributes>
+          <attribute name="weight" value="ultraheavy"/>
+          <attribute name="scale" value="2"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton">
+        <property name="label" translatable="yes">Generate new key</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+        <property name="margin-start">30</property>
+        <property name="margin-end">30</property>
+        <property name="margin-top">30</property>
+        <property name="margin-bottom">50</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkBox" id="_NoneBox">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="valign">center</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="vexpand">True</property>
+        <property name="label" translatable="yes">WARNING
+Your passwords will be stored locally as plain text. You can change this later.</property>
+        <property name="justify">center</property>
+        <property name="wrap">True</property>
+        <property name="width-chars">0</property>
+        <property name="max-width-chars">0</property>
+        <attributes>
+          <attribute name="weight" value="ultraheavy"/>
+          <attribute name="scale" value="1.25"/>
+          <attribute name="foreground" value="#f5f5c2c21111"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkBox" id="_PasswordBox">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-top">25</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
+        <property name="label" translatable="yes">Password</property>
+        <property name="justify">center</property>
+        <attributes>
+          <attribute name="weight" value="ultraheavy"/>
+          <attribute name="scale" value="2"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <placeholder/>
     </child>
   </object>
 </interface>

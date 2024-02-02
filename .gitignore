@@ -2,4 +2,7 @@ bin/
 obj/
 
 debug.xml
+
+# Glade is weird
 *.glade~
+*.glade#
