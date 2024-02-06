@@ -15,12 +15,12 @@ public abstract class Login : Window
     [UI] protected Button _BackBtn;
     [UI] protected Button _NextBtn;
 
-    public void CancelHandler(object? sender, EventArgs e)
+    private void CancelHandler(object? sender, EventArgs e)
     {
         Application.Quit();
     }
 
-    public void BackHandler(object? sender, EventArgs e)
+    private void BackHandler(object? sender, EventArgs e)
     {
         _Container.Remove(_Scenes[_SceneIndex]);
         _SceneIndex--;
@@ -36,7 +36,7 @@ public abstract class Login : Window
         };
     }
 
-    public void NextHandler(object? sender, EventArgs e)
+    private void NextHandler(object? sender, EventArgs e)
     {
         _Container.Remove(_Scenes[_SceneIndex]);
         _SceneIndex++;
@@ -57,7 +57,7 @@ public abstract class Login : Window
         return Config.Setup ? new Normal() : new Setup();
     }
 
-    public Login(Builder builder) : base(builder.GetRawOwnedObject("Login"))
+    protected Login(Builder builder) : base(builder.GetRawOwnedObject("Login"))
     {
         builder.Autoconnect(this);
         DeleteEvent += (sender, e) => this.Hide();
@@ -89,7 +89,9 @@ public class Setup : Login
     [UI] private RadioButton _PasswordSelect;
     [UI] private RadioButton _NoneSelect;
 
-    private void GetSelectedMethod(object? sender, EventArgs e)
+    [UI] private Button _NewKeyBtn;
+
+    private void MethodSelectHandler(object? sender, EventArgs e)
     {
         if (_KeySelect.Active)
         {
@@ -108,13 +110,36 @@ public class Setup : Login
         }
     }
 
+    private void GenerateKeyHandler(object? sender, EventArgs e)
+    {
+        Window generatedKeyDialog = new(" ");
+        generatedKeyDialog.Resizable = false;
+        generatedKeyDialog.IconName = "security-high";
+        generatedKeyDialog.Modal = true;
+
+        Label key = new("Placeholder");
+        key.Visible = true;
+        key.Margin = 20;
+        key.Selectable = true;
+
+        Pango.AttrList attr = new();
+        attr.Insert(new Pango.AttrWeight(Pango.Weight.Ultraheavy));
+        attr.Insert(new Pango.AttrScale(2));
+        key.Attributes = attr;
+
+        generatedKeyDialog.Add(key);
+        App.AddWindow(generatedKeyDialog);
+    }
+
 
     public Setup() : base(new Builder("Login.Setup.glade"))
     {
         _Scenes = new Box[] { _MethodSelectBox, _NoneBox };
 
-        _KeySelect.Toggled += GetSelectedMethod;
-        _PasswordSelect.Toggled += GetSelectedMethod;
-        _NoneSelect.Toggled += GetSelectedMethod;
+        _KeySelect.Toggled += MethodSelectHandler;
+        _PasswordSelect.Toggled += MethodSelectHandler;
+        _NoneSelect.Toggled += MethodSelectHandler;
+
+        _NewKeyBtn.Clicked += GenerateKeyHandler;
     }
 }

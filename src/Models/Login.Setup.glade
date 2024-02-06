@@ -192,22 +192,20 @@
   <object class="GtkBox" id="_KeyBox">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="valign">center</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkButton" id="_NewKeyBtn">
+        <property name="label" translatable="yes">Generate new key</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="margin-top">25</property>
-        <property name="hexpand">True</property>
-        <property name="vexpand">True</property>
-        <property name="label" translatable="yes"> </property>
-        <property name="justify">center</property>
-        <attributes>
-          <attribute name="weight" value="ultraheavy"/>
-          <attribute name="scale" value="2"/>
-        </attributes>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+        <property name="margin-start">30</property>
+        <property name="margin-end">30</property>
+        <property name="margin-top">50</property>
+        <property name="margin-bottom">50</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -216,21 +214,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
-        <property name="label" translatable="yes">Generate new key</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-start">30</property>
-        <property name="margin-end">30</property>
-        <property name="margin-top">30</property>
-        <property name="margin-bottom">50</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
+      <placeholder/>
     </child>
   </object>
   <object class="GtkBox" id="_NoneBox">
