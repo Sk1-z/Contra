@@ -18,7 +18,7 @@ public static class App
         Application.Init();
         _App.Register(GLib.Cancellable.Current);
 
-        AddWindow(Model.Login.View());
+        AddWindow(Models.Login.View());
         Application.Run();
     }
 }

@@ -1,55 +1,61 @@
 using Gtk;
 using UI = Gtk.Builder.ObjectAttribute;
 
-namespace Contra.Model;
+namespace Contra.Models;
 
 public abstract class Login : Window
 {
-    [UI] private Box _Container;
-    [UI] private Box _ControlButtonContainer;
+    [UI] protected Box _container;
+    [UI] protected Box _controlButtonContainer;
 
-    protected int _SceneIndex = 0;
-    protected Box[] _Scenes;
+    [UI] protected Button _cancelBtn;
+    [UI] protected Button _backBtn;
+    [UI] protected Button _nextBtn;
 
-    [UI] protected Button _CancelBtn;
-    [UI] protected Button _BackBtn;
-    [UI] protected Button _NextBtn;
 
-    private void CancelHandler(object? sender, EventArgs e)
+    private void CancelEventHandler(object? sender, EventArgs e)
     {
         Application.Quit();
     }
 
-    private void BackHandler(object? sender, EventArgs e)
+    protected void BackEventHandler(object? sender, EventArgs e)
     {
-        _Container.Remove(_Scenes[_SceneIndex]);
-        _SceneIndex--;
-        if (_SceneIndex == _Scenes.Length)
+        if (Scene.Current().Back())
         {
-            this.Destroy();
-            App.AddWindow(Login.View());
+            _container.Remove(Scene.Current().Model);
+            Scene.Index--;
+            if (Scene.Index == -1)
+            {
+                this.Destroy();
+                Scene.Index = 0;
+                App.AddWindow(Login.View());
+            }
+            else
+            {
+                _container.Add(Scene.Current().Model);
+                _container.ReorderChild(_controlButtonContainer, 1);
+            }
         }
-        else
-        {
-            _Container.Add(_Scenes[_SceneIndex]);
-            _Container.ReorderChild(_ControlButtonContainer, 1);
-        };
     }
 
-    private void NextHandler(object? sender, EventArgs e)
+    protected void NextEventHandler(object? sender, EventArgs e)
     {
-        _Container.Remove(_Scenes[_SceneIndex]);
-        _SceneIndex++;
-        if (_SceneIndex == _Scenes.Length)
+        if (Scene.Current().Next())
         {
-            this.Destroy();
-            App.AddWindow(Login.View());
+            _container.Remove(Scene.Current().Model);
+            Scene.Index++;
+            if (Scene.AtLast())
+            {
+                this.Destroy();
+                Scene.Index = 0;
+                App.AddWindow(Login.View());
+            }
+            else
+            {
+                _container.Add(Scene.Current().Model);
+                _container.ReorderChild(_controlButtonContainer, 1);
+            }
         }
-        else
-        {
-            _Container.Add(_Scenes[_SceneIndex]);
-            _Container.ReorderChild(_ControlButtonContainer, 1);
-        };
     }
 
     public static Login View()
@@ -57,89 +63,109 @@ public abstract class Login : Window
         return Config.Setup ? new Normal() : new Setup();
     }
 
+    public static void Check()
+    {
+
+    }
+
     protected Login(Builder builder) : base(builder.GetRawOwnedObject("Login"))
     {
         builder.Autoconnect(this);
         DeleteEvent += (sender, e) => this.Hide();
 
-        _CancelBtn.Clicked += CancelHandler;
-        _BackBtn.Clicked += BackHandler;
-        _NextBtn.Clicked += NextHandler;
-
+        _cancelBtn.Clicked += CancelEventHandler;
+        _backBtn.Clicked += BackEventHandler;
+        _nextBtn.Clicked += NextEventHandler;
     }
 }
 
-public class Normal : Login
+class Normal : Login
 {
     public Normal() : base(new Builder("Login.Normal.glade"))
     {
     }
 }
 
-public class Setup : Login
+class Setup : Login
 {
-    [UI] private Box _Container;
-    [UI] private Box _MethodSelectBox;
+    [UI] private Box _methodSelectBox;
 
-    [UI] private Box _KeyBox;
-    [UI] private Box _PasswordBox;
-    [UI] private Box _NoneBox;
+    [UI] private Box _keyBox;
+    [UI] private Box _passwordBox;
+    [UI] private Box _noneBox;
 
-    [UI] private RadioButton _KeySelect;
-    [UI] private RadioButton _PasswordSelect;
-    [UI] private RadioButton _NoneSelect;
+    [UI] private RadioButton _keySelect;
+    [UI] private RadioButton _passwordSelect;
+    [UI] private RadioButton _noneSelect;
 
-    [UI] private Button _NewKeyBtn;
-
-    private void MethodSelectHandler(object? sender, EventArgs e)
+    private void MethodSelectEventHandler(object? sender, EventArgs e)
     {
-        if (_KeySelect.Active)
+        if (_keySelect.Active)
         {
             Config.Level = Config.SecurityLevel.Key;
-            _Scenes[1] = _KeyBox;
+            Scene.Scenes[1] = new(_keyBox);
         }
-        else if (_PasswordSelect.Active)
+        else if (_passwordSelect.Active)
         {
             Config.Level = Config.SecurityLevel.Password;
-            _Scenes[1] = _PasswordBox;
+            Scene.Scenes[1] = new(_passwordBox, null, SubmitPasswordEventHandler);
         }
-        else if (_NoneSelect.Active)
+        else if (_noneSelect.Active)
         {
             Config.Level = Config.SecurityLevel.None;
-            _Scenes[1] = _NoneBox;
+            Scene.Scenes[1] = new(_noneBox);
         }
     }
 
-    private void GenerateKeyHandler(object? sender, EventArgs e)
+    [UI] private Button _newKeyBtn;
+
+    [UI] private Window _keyWindow;
+    [UI] private Label _keyLabel;
+    [UI] private Button _closeKeyWindowBtn;
+
+    private void GenerateKeyEventHandler(object? sender, EventArgs e)
     {
-        Window generatedKeyDialog = new(" ");
-        generatedKeyDialog.Resizable = false;
-        generatedKeyDialog.IconName = "security-high";
-        generatedKeyDialog.Modal = true;
-
-        Label key = new("Placeholder");
-        key.Visible = true;
-        key.Margin = 20;
-        key.Selectable = true;
-
-        Pango.AttrList attr = new();
-        attr.Insert(new Pango.AttrWeight(Pango.Weight.Ultraheavy));
-        attr.Insert(new Pango.AttrScale(2));
-        key.Attributes = attr;
-
-        generatedKeyDialog.Add(key);
-        App.AddWindow(generatedKeyDialog);
+        _keyLabel.Text = new Security.Key().ToString();
+        _keyWindow.ShowAll();
     }
 
+    [UI] private Entry _passwordEntry;
+    [UI] private Entry _passwordEntryConfirm;
+    [UI] private Label _passwordLabel;
+
+    private bool SubmitPasswordEventHandler()
+    {
+        if (_passwordEntry.Text.Length < 8)
+        {
+            _passwordLabel.Text = "Password must be atleast 8 characters";
+        }
+        else if (_passwordEntry.Text == _passwordEntryConfirm.Text)
+        {
+            _passwordLabel.Text = "";
+            return true;
+        }
+        else
+        {
+            _passwordLabel.Text = "Entries do not match";
+        }
+        return false;
+    }
 
     public Setup() : base(new Builder("Login.Setup.glade"))
     {
-        _Scenes = new Box[] { _MethodSelectBox, _NoneBox };
+        Scene.Scenes = new Scene[] {
+            new(_methodSelectBox),
+            new(_noneBox)
+        };
 
-        _KeySelect.Toggled += MethodSelectHandler;
-        _PasswordSelect.Toggled += MethodSelectHandler;
-        _NoneSelect.Toggled += MethodSelectHandler;
+        App.AddWindow(_keyWindow);
+        _keyWindow.Hide();
+        _closeKeyWindowBtn.Clicked += (sender, e) => _keyWindow.Hide();
 
-        _NewKeyBtn.Clicked += GenerateKeyHandler;
+        _keySelect.Toggled += MethodSelectEventHandler;
+        _passwordSelect.Toggled += MethodSelectEventHandler;
+        _noneSelect.Toggled += MethodSelectEventHandler;
+
+        _newKeyBtn.Clicked += GenerateKeyEventHandler;
     }
 }

@@ -6,11 +6,10 @@ public static class Config
 {
     static string ConfigPath =
 #if DEBUG
-        @"debug.xml"
+@"debug.xml";
 #else
-        @"~/.config/contra/contra.xml"
+@"~/.config/contra/contra.xml";
 #endif
-    ;
 
     public static void Get()
     {
@@ -49,8 +48,6 @@ public static class Config
         File.Delete(ConfigPath);
     }
 
-    // The enum is used as the type for a radio button
-    // so it intentionally does not follow proper naming conventions  
     public enum SecurityLevel
     {
         Key,
