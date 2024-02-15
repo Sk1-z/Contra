@@ -6,19 +6,19 @@ public partial class Cryptor
 {
     private interface IDecryptor
     {
-        byte[]? Decrypt(byte[] msg);
+        byte[] Decrypt(byte[] msg);
     }
 
     private class KeyDecryptor : IDecryptor
     {
-        private byte[] _key;
+        private readonly byte[] _key;
 
         public KeyDecryptor(byte[] key)
         {
             _key = key;
         }
 
-        public byte[]? Decrypt(byte[] encryptedMsg)
+        public byte[] Decrypt(byte[] encryptedMsg)
         {
             using (var aes = Aes.Create())
             {
@@ -44,7 +44,7 @@ public partial class Cryptor
                     }
                     catch
                     {
-                        return null;
+                        throw;
                     }
                 }
             }
@@ -53,14 +53,14 @@ public partial class Cryptor
 
     private class PasswordDecryptor : IDecryptor
     {
-        private string _password;
+        private readonly string _password;
 
         public PasswordDecryptor(string password)
         {
             _password = password;
         }
 
-        public byte[]? Decrypt(byte[] msg)
+        public byte[] Decrypt(byte[] msg)
         {
             byte[] salt = new byte[Size.Salt(Size.Unit.Byte)];
             Array.Copy(msg, salt, salt.Length);
@@ -82,7 +82,7 @@ public partial class Cryptor
 
     private class PseudoDecryptor : IDecryptor
     {
-        public byte[]? Decrypt(byte[] msg)
+        public byte[] Decrypt(byte[] msg)
         {
             return msg;
         }

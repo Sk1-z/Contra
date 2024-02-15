@@ -11,7 +11,7 @@ public partial class Cryptor
 
     private class KeyEncryptor : IEncryptor
     {
-        private byte[] _key;
+        private readonly byte[] _key;
 
         public KeyEncryptor(byte[] key)
         {
@@ -57,9 +57,9 @@ public partial class Cryptor
 
     private class PasswordEncryptor : IEncryptor
     {
-        private byte[] _salt;
+        private readonly byte[] _salt;
 
-        private KeyEncryptor _encryptor;
+        private readonly KeyEncryptor _encryptor;
 
         public PasswordEncryptor(string password)
         {

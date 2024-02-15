@@ -4,7 +4,7 @@ namespace Contra.Security;
 
 public class Key
 {
-    private byte[] _key = new byte[Size.Key(Size.Unit.Byte)];
+    private readonly byte[] _key = new byte[Size.Key(Size.Unit.Byte)];
 
     public Key()
     {

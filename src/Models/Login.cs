@@ -8,11 +8,11 @@ public abstract class Login : Window
     [UI] protected Box _container;
     [UI] protected Box _controlButtonContainer;
 
-    [UI] protected Button _cancelBtn;
-    [UI] protected Button _backBtn;
-    [UI] protected Button _nextBtn;
+    [UI] private Button _cancelBtn;
+    [UI] private Button _backBtn;
+    [UI] private Button _nextBtn;
 
-    protected Security.Cryptor Cryptor;
+    protected Security.Cryptor _cryptor;
 
     private void CancelEventHandler(object? sender, EventArgs e)
     {
@@ -43,7 +43,7 @@ public abstract class Login : Window
         {
             if (Scene.AtLast())
             {
-                Authenticate();
+                AuthenticateUser();
             }
             else
             {
@@ -65,14 +65,7 @@ public abstract class Login : Window
         _nextBtn.Clicked += NextEventHandler;
     }
 
-    public void Authenticate()
-    {
-        if (Config.Check == "Contrasena") Config.Check = Cryptor.Encrypt("Contrasena");
-        else if (Cryptor.Decrypt(Config.Check) != "Contrasena") return;
-
-        this.Destroy();
-        App.AddWindow(new AppWindow(Cryptor));
-    }
+    protected abstract void AuthenticateUser();
 
     public static Login View()
     {
@@ -82,8 +75,91 @@ public abstract class Login : Window
 
 public class Normal : Login
 {
+    [UI] private Box _enterKey;
+    [UI] private Label _keyError;
+    [UI] private Entry _keyEntry;
+
+    [UI] private Box _enterPassword;
+    [UI] private Label _passwordError;
+    [UI] private Entry _passwordEntry;
+
     public Normal() : base(new Builder("Login.Normal.glade"))
     {
+        switch (Config.Security)
+        {
+            case Config.SecurityLevel.Key:
+                {
+                    Scene.Scenes = new Scene[] { new(_enterKey) };
+                    _container.Add(_enterKey);
+                    _container.ReorderChild(_controlButtonContainer, 1);
+                    break;
+                }
+
+            case Config.SecurityLevel.Password:
+                {
+                    Scene.Scenes = new Scene[] { new(_enterPassword) };
+                    _container.Add(_enterPassword);
+                    _container.ReorderChild(_controlButtonContainer, 1);
+                    break;
+                }
+
+            case Config.SecurityLevel.None:
+                {
+                    AuthenticateUser();
+                    break;
+                }
+        }
+    }
+
+    sealed override protected void AuthenticateUser()
+    {
+        switch (Config.Security)
+        {
+            case Config.SecurityLevel.Key:
+                {
+                    var key = Security.Key.FromString(_keyEntry.Text);
+                    if (key == null)
+                    {
+                        _keyError.Text = "Enter a valid key";
+                        return;
+                    }
+
+                    _cryptor = new(key);
+                    try
+                    {
+                        if (_cryptor.Decrypt(Config.Check) != "Contrasena") throw new Exception();
+                    }
+                    catch
+                    {
+                        _keyError.Text = "Incorrect key";
+                        return;
+                    }
+                    break;
+                }
+
+            case Config.SecurityLevel.Password:
+                {
+                    _cryptor = new(_passwordEntry.Text);
+                    try
+                    {
+                        if (_cryptor.Decrypt(Config.Check) != "Contrasena") throw new Exception();
+                    }
+                    catch
+                    {
+                        _passwordError.Text = "Incorrect password";
+                        return;
+                    }
+                    break;
+                }
+
+            case Config.SecurityLevel.None:
+                {
+                    break;
+                }
+        }
+
+        this.Destroy();
+        App.AddWindow(new AppWindow(_cryptor));
     }
 }
 
@@ -103,17 +179,17 @@ public class Setup : Login
     {
         if (_keySelect.Active)
         {
-            Config.Level = Config.SecurityLevel.Key;
+            Config.Security = Config.SecurityLevel.Key;
             Scene.Scenes[1] = new(_keyBox);
         }
         else if (_passwordSelect.Active)
         {
-            Config.Level = Config.SecurityLevel.Password;
+            Config.Security = Config.SecurityLevel.Password;
             Scene.Scenes[1] = new(_passwordBox, null, SubmitPasswordEventHandler);
         }
         else if (_noneSelect.Active)
         {
-            Config.Level = Config.SecurityLevel.None;
+            Config.Security = Config.SecurityLevel.None;
             Scene.Scenes[1] = new(_noneBox, null, NoSecuritySelectEventHandler);
         }
     }
@@ -129,7 +205,7 @@ public class Setup : Login
         Security.Key key = new();
 
         _keyLabel.Text = key.ToString();
-        Cryptor = new(key);
+        _cryptor = new(key);
         _keyWindow.ShowAll();
     }
 
@@ -146,7 +222,7 @@ public class Setup : Login
         else if (_passwordEntry.Text == _passwordEntryConfirm.Text)
         {
             _passwordLabel.Text = "";
-            Cryptor = new(_passwordEntry.Text);
+            _cryptor = new(_passwordEntry.Text);
             return true;
         }
         else
@@ -158,17 +234,18 @@ public class Setup : Login
 
     private bool NoSecuritySelectEventHandler()
     {
-        Cryptor = new();
+        _cryptor = new();
         return true;
     }
 
     public Setup() : base(new Builder("Login.Setup.glade"))
     {
+        Config.Check = "Contrasena";
         Scene.Scenes = new Scene[] {
             new(_methodSelectBox),
             new(_noneBox)
         };
-        Cryptor = new();
+        _cryptor = new();
 
         _keyWindow.Hide();
         _closeKeyWindowBtn.Clicked += (sender, e) => _keyWindow.Hide();
@@ -178,5 +255,14 @@ public class Setup : Login
         _noneSelect.Toggled += MethodSelectEventHandler;
 
         _newKeyBtn.Clicked += GenerateKeyEventHandler;
+    }
+
+    sealed override protected void AuthenticateUser()
+    {
+        Config.Setup = true;
+        Config.Check = _cryptor.Encrypt("Contrasena");
+
+        this.Destroy();
+        App.AddWindow(new AppWindow(_cryptor));
     }
 }

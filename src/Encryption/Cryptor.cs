@@ -4,8 +4,8 @@ namespace Contra.Security;
 
 public partial class Cryptor
 {
-    private IEncryptor _encryptor;
-    private IDecryptor _decryptor;
+    private readonly IEncryptor _encryptor;
+    private readonly IDecryptor _decryptor;
 
     public Cryptor()
     {
@@ -30,9 +30,8 @@ public partial class Cryptor
         return Convert.ToBase64String(_encryptor.Encrypt(Encoding.UTF8.GetBytes(msg)));
     }
 
-    public string? Decrypt(string msg)
+    public string Decrypt(string msg)
     {
-        var text = _decryptor.Decrypt(Convert.FromBase64String(msg));
-        return text == null ? null : Encoding.UTF8.GetString(text);
+        return Encoding.UTF8.GetString(_decryptor.Decrypt(Convert.FromBase64String(msg)));
     }
 }

@@ -4,14 +4,14 @@ namespace Contra;
 
 public static class Config
 {
-    static string ConfigPath =
+    public static readonly string ConfigPath =
 #if DEBUG
 @"debug.xml";
 #else
 @"~/.config/contra/contra.xml";
 #endif
 
-    static string CheckPath =
+    public static readonly string CheckPath =
 #if DEBUG
 @"check.dat";
 #else
@@ -40,10 +40,7 @@ public static class Config
             Internal = new Fields
             {
                 Setup = false,
-                Security = new SecurityInfo
-                {
-                    Level = SecurityLevel.None,
-                }
+                Security = SecurityLevel.None
             };
 
             Check = "Contrasena";
@@ -64,15 +61,10 @@ public static class Config
         None,
     }
 
-    public class SecurityInfo
-    {
-        public SecurityLevel Level;
-    }
-
     public class Fields
     {
         public bool Setup { get; set; }
-        public SecurityInfo Security { get; set; }
+        public SecurityLevel Security { get; set; }
     }
 
     static Fields? Internal = null;
@@ -83,13 +75,13 @@ public static class Config
         set { Internal!.Setup = value; Set(); }
     }
 
-    public static SecurityLevel Level
+    public static SecurityLevel Security
     {
-        get => Internal!.Security.Level;
-        set { Internal!.Security.Level = value; Set(); }
+        get => Internal!.Security;
+        set { Internal!.Security = value; Set(); }
     }
 
-    public static string? Check
+    public static string Check
     {
         get { var sr = new StreamReader(CheckPath); return sr.ReadToEnd(); }
         set { var sw = new StreamWriter(CheckPath); sw.Write(value); sw.Flush(); }
