@@ -12,6 +12,7 @@ public abstract class Login : Window
     [UI] protected Button _backBtn;
     [UI] protected Button _nextBtn;
 
+    protected Security.Cryptor Cryptor;
 
     private void CancelEventHandler(object? sender, EventArgs e)
     {
@@ -22,16 +23,14 @@ public abstract class Login : Window
     {
         if (Scene.Current().Back())
         {
-            _container.Remove(Scene.Current().Model);
-            Scene.Index--;
-            if (Scene.Index == -1)
+            if (Scene.AtFirst())
             {
-                this.Destroy();
-                Scene.Index = 0;
-                App.AddWindow(Login.View());
+                Application.Quit();
             }
             else
             {
+                _container.Remove(Scene.Current().Model);
+                Scene.Index--;
                 _container.Add(Scene.Current().Model);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
@@ -42,30 +41,18 @@ public abstract class Login : Window
     {
         if (Scene.Current().Next())
         {
-            _container.Remove(Scene.Current().Model);
-            Scene.Index++;
             if (Scene.AtLast())
             {
-                this.Destroy();
-                Scene.Index = 0;
-                App.AddWindow(Login.View());
+                Authenticate();
             }
             else
             {
+                _container.Remove(Scene.Current().Model);
+                Scene.Index++;
                 _container.Add(Scene.Current().Model);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
         }
-    }
-
-    public static Login View()
-    {
-        return Config.Setup ? new Normal() : new Setup();
-    }
-
-    public static void Check()
-    {
-
     }
 
     protected Login(Builder builder) : base(builder.GetRawOwnedObject("Login"))
@@ -77,16 +64,30 @@ public abstract class Login : Window
         _backBtn.Clicked += BackEventHandler;
         _nextBtn.Clicked += NextEventHandler;
     }
+
+    public void Authenticate()
+    {
+        if (Config.Check == "Contrasena") Config.Check = Cryptor.Encrypt("Contrasena");
+        else if (Cryptor.Decrypt(Config.Check) != "Contrasena") return;
+
+        this.Destroy();
+        App.AddWindow(new AppWindow(Cryptor));
+    }
+
+    public static Login View()
+    {
+        return Config.Setup ? new Normal() : new Setup();
+    }
 }
 
-class Normal : Login
+public class Normal : Login
 {
     public Normal() : base(new Builder("Login.Normal.glade"))
     {
     }
 }
 
-class Setup : Login
+public class Setup : Login
 {
     [UI] private Box _methodSelectBox;
 
@@ -113,7 +114,7 @@ class Setup : Login
         else if (_noneSelect.Active)
         {
             Config.Level = Config.SecurityLevel.None;
-            Scene.Scenes[1] = new(_noneBox);
+            Scene.Scenes[1] = new(_noneBox, null, NoSecuritySelectEventHandler);
         }
     }
 
@@ -125,7 +126,10 @@ class Setup : Login
 
     private void GenerateKeyEventHandler(object? sender, EventArgs e)
     {
-        _keyLabel.Text = new Security.Key().ToString();
+        Security.Key key = new();
+
+        _keyLabel.Text = key.ToString();
+        Cryptor = new(key);
         _keyWindow.ShowAll();
     }
 
@@ -142,6 +146,7 @@ class Setup : Login
         else if (_passwordEntry.Text == _passwordEntryConfirm.Text)
         {
             _passwordLabel.Text = "";
+            Cryptor = new(_passwordEntry.Text);
             return true;
         }
         else
@@ -151,14 +156,20 @@ class Setup : Login
         return false;
     }
 
+    private bool NoSecuritySelectEventHandler()
+    {
+        Cryptor = new();
+        return true;
+    }
+
     public Setup() : base(new Builder("Login.Setup.glade"))
     {
         Scene.Scenes = new Scene[] {
             new(_methodSelectBox),
             new(_noneBox)
         };
+        Cryptor = new();
 
-        App.AddWindow(_keyWindow);
         _keyWindow.Hide();
         _closeKeyWindowBtn.Clicked += (sender, e) => _keyWindow.Hide();
 

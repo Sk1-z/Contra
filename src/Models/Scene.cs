@@ -33,8 +33,13 @@ public class Scene
         return Scenes[Index];
     }
 
+    public static bool AtFirst()
+    {
+        return Index == 0;
+    }
+
     public static bool AtLast()
     {
-        return Index == Scenes.Length;
+        return Index + 1 == Scenes.Length;
     }
 }

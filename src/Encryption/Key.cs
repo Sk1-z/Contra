@@ -4,32 +4,37 @@ namespace Contra.Security;
 
 public class Key
 {
-    private byte[] _key;
+    private byte[] _key = new byte[Size.Key(Size.Unit.Byte)];
 
     public Key()
     {
-        _key = new byte[Size.Key(Size.Unit.BYTE)];
         RandomNumberGenerator.Create().GetBytes(_key);
     }
 
-    public Key(string key)
+    public static Key? FromString(string key)
     {
-        _key = new byte[Size.Key(Size.Unit.BYTE)];
+        Key newKey = new();
 
         try
         {
-            for (int i = 0; i < Size.Key(Size.Unit.BYTE); i++) _key[i] = Convert.ToByte(key[(2 * i)..((2 * i) + 2)], 16);
+            for (int i = 0; i < Size.Key(Size.Unit.Byte); i++) newKey._key[i] = Convert.ToByte(key[(2 * i)..((2 * i) + 2)], 16);
+            return newKey;
         }
         catch
         {
-            _key = new Key()._key;
+            return null;
         }
     }
 
-    public override string ToString()
+    public Byte[] Bytes()
+    {
+        return _key;
+    }
+
+    override public string ToString()
     {
         string acc = "";
-        for (int i = 0; i < Size.Key(Size.Unit.BYTE); i++) acc += _key[i].ToString("X2");
+        for (int i = 0; i < Size.Key(Size.Unit.Byte); i++) acc += _key[i].ToString("X2");
         return acc;
     }
 }

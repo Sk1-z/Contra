@@ -2,6 +2,7 @@ bin/
 obj/
 
 debug.xml
+check.dat
 
 # Glade is weird
 *.glade~

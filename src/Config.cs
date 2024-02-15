@@ -11,9 +11,17 @@ public static class Config
 @"~/.config/contra/contra.xml";
 #endif
 
+    static string CheckPath =
+#if DEBUG
+@"check.dat";
+#else
+@"~/.config/contra/check.dat";
+#endif
+
     public static void Get()
     {
         if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath);
+        if (!File.Exists(CheckPath)) File.Create(CheckPath);
 
         try
         {
@@ -35,9 +43,10 @@ public static class Config
                 Security = new SecurityInfo
                 {
                     Level = SecurityLevel.None,
-                    Check = "Contrasena"
                 }
             };
+
+            Check = "Contrasena";
         }
 
         new XmlSerializer(typeof(Fields)).Serialize(new StreamWriter(ConfigPath), Internal);
@@ -58,8 +67,6 @@ public static class Config
     public class SecurityInfo
     {
         public SecurityLevel Level;
-        // "Contrasena"
-        public string? Check;
     }
 
     public class Fields
@@ -84,7 +91,7 @@ public static class Config
 
     public static string? Check
     {
-        get => Internal!.Security.Check;
-        set { Internal!.Security.Check = value; Set(); }
+        get { var sr = new StreamReader(CheckPath); return sr.ReadToEnd(); }
+        set { var sw = new StreamWriter(CheckPath); sw.Write(value); sw.Flush(); }
     }
 }

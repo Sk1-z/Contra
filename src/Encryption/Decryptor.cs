@@ -2,38 +2,89 @@ using System.Security.Cryptography;
 
 namespace Contra.Security;
 
-interface IDecryptor
+public partial class Cryptor
 {
-    private Aes? _managedAES
+    private interface IDecryptor
     {
-        get => _managedAES;
-        set => _managedAES = value;
+        byte[]? Decrypt(byte[] msg);
     }
 
-    private Rfc2898DeriveBytes? _keyDeriver
+    private class KeyDecryptor : IDecryptor
     {
-        get => _keyDeriver;
-        set => _keyDeriver = value;
+        private byte[] _key;
+
+        public KeyDecryptor(byte[] key)
+        {
+            _key = key;
+        }
+
+        public byte[]? Decrypt(byte[] encryptedMsg)
+        {
+            using (var aes = Aes.Create())
+            {
+                byte[] iv = new byte[128 / 8];
+                Array.Copy(encryptedMsg, iv, iv.Length);
+
+                using (var decryptor = aes.CreateDecryptor(_key, iv))
+                using (var ms = new MemoryStream())
+                {
+                    try
+                    {
+                        using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Write))
+                        using (var bw = new BinaryWriter(cs))
+                        {
+                            bw.Write(
+                                encryptedMsg,
+                                iv.Length,
+                                encryptedMsg.Length - iv.Length
+                            );
+                        }
+
+                        return ms.ToArray();
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+            }
+        }
     }
 
-    private Key? _key
+    private class PasswordDecryptor : IDecryptor
     {
-        get => _key;
-        set => _key = value;
+        private string _password;
+
+        public PasswordDecryptor(string password)
+        {
+            _password = password;
+        }
+
+        public byte[]? Decrypt(byte[] msg)
+        {
+            byte[] salt = new byte[Size.Salt(Size.Unit.Byte)];
+            Array.Copy(msg, salt, salt.Length);
+
+            byte[] key = new Rfc2898DeriveBytes(
+                    _password,
+                    salt,
+                    Size.Iterations,
+                    HashAlgorithmName.SHA256
+            ).GetBytes(Size.Key(Size.Unit.Byte));
+
+            byte[] cipher = new byte[msg.Length - salt.Length];
+            Array.Copy(msg, salt.Length, cipher, 0, cipher.Length);
+
+            return new KeyDecryptor(key).Decrypt(cipher);
+        }
     }
 
-    private byte[]? _salt
-    {
-        get => _salt;
-        set => _salt = value;
-    }
 
-    public byte[] Decrypt(byte[] msg, byte[] payload);
+    private class PseudoDecryptor : IDecryptor
+    {
+        public byte[]? Decrypt(byte[] msg)
+        {
+            return msg;
+        }
+    }
 }
-
-// class KeyDecryptor : IDecryptor
-
-// class PasswordDecryptor : IDecryptor
-
-// class PseudoDecryptor : IDecryptor
-

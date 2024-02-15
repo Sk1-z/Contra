@@ -1,27 +1,38 @@
+using System.Text;
+
 namespace Contra.Security;
 
-public class Cryptor
+public partial class Cryptor
 {
     private IEncryptor _encryptor;
     private IDecryptor _decryptor;
 
-    public Cryptor(Key key)
+    public Cryptor()
     {
-
+        _encryptor = new PseudoEncryptor();
+        _decryptor = new PseudoDecryptor();
     }
 
-    public Cryptor(String password)
+    public Cryptor(Key key)
     {
+        _encryptor = new KeyEncryptor(key.Bytes());
+        _decryptor = new KeyDecryptor(key.Bytes());
+    }
 
+    public Cryptor(string password)
+    {
+        _encryptor = new PasswordEncryptor(password);
+        _decryptor = new PasswordDecryptor(password);
     }
 
     public string Encrypt(string msg)
     {
-        return null;
+        return Convert.ToBase64String(_encryptor.Encrypt(Encoding.UTF8.GetBytes(msg)));
     }
 
-    public string Decrypt(string msg)
+    public string? Decrypt(string msg)
     {
-        return null;
+        var text = _decryptor.Decrypt(Convert.FromBase64String(msg));
+        return text == null ? null : Encoding.UTF8.GetString(text);
     }
 }

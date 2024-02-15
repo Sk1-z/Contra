@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkWindow" id="App">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="vexpand">True</property>
+        <property name="label" translatable="yes">You are in.</property>
+        <property name="justify">center</property>
+        <attributes>
+          <attribute name="weight" value="ultraheavy"/>
+          <attribute name="scale" value="2"/>
+        </attributes>
+      </object>
+    </child>
+  </object>
+</interface>
