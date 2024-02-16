@@ -1,4 +1,4 @@
-using System.Xml.Serialization;
+using System.Text.Json;
 using Gtk;
 using UI = Gtk.Builder.ObjectAttribute;
 
@@ -89,18 +89,16 @@ public class AppWindow : Window
         Scene.Index = em.Index;
         _container.Add(Scene.Current().Model);
         _container.ReorderChild(_controlButtonContainer, 1);
-
     }
 
     public void ExitEventHandler(object? sender, EventArgs e)
     {
-        // Save code goes here
-        // string xml = "";
-        // using (var sw = new StreamWriter(xml))
-        // {
-        //     new XmlSerializer(typeof(List<EntryBox>)).Serialize(sw, EntryManager.Boxes);
-        // }
-        // Console.WriteLine(xml);
+        string data = Contra.Data.Storage.Store(EntryManager.Boxes);
+        using (var sw = new StreamWriter(Config.DataPath))
+        {
+            sw.Write(_cryptor.Encrypt(data));
+            sw.Flush();
+        }
 
         Application.Quit();
     }
@@ -108,6 +106,9 @@ public class AppWindow : Window
     public AppWindow(Security.Cryptor cryptor) : this(new Builder("AppWindow.glade"))
     {
         _cryptor = cryptor;
+
+        using (var sr = new StreamReader(Config.DataPath))
+            Contra.Data.Storage.Restore(_passwordSelectionList, _cryptor.Decrypt(sr.ReadToEnd()));
     }
 
     protected AppWindow(Builder builder) : base(builder.GetRawOwnedObject("App"))
@@ -126,12 +127,12 @@ public class AppWindow : Window
         _passwordSelectionList.ListRowActivated += RowActivatedEventHandler;
         _passwordListSearch.Changed += SearchEventHandler;
 
-        for (int i = 1; i < 11; i++)
-        {
-            new EntryManager(
-                    _passwordSelectionList,
-                    new($"{i}", "password", "user", "mom.com", "noted")
-            );
-        }
+        // for (int i = 1; i < 11; i++)
+        // {
+        //     new EntryManager(
+        //             _passwordSelectionList,
+        //             new($"{i}", "password", "user", "mom.com", "noted")
+        //     );
+        // }
     }
 }

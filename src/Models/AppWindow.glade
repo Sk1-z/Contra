@@ -159,8 +159,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Click the '+' button to create a new
-                      password entry</property>
+                    <property name="label" translatable="yes">Click the '+' button to create a new password entry</property>
                     <property name="justify">center</property>
                     <property name="wrap">True</property>
                   </object>

@@ -18,11 +18,7 @@ public static class App
         Application.Init();
         _App.Register(GLib.Cancellable.Current);
 
-#if DEBUG
-        AddWindow(new Models.AppWindow(new Security.Cryptor()));
-#else
         AddWindow(Models.Login.View());
-#endif
         Application.Run();
     }
 }

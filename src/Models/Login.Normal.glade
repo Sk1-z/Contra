@@ -164,6 +164,14 @@
       </packing>
     </child>
   </object>
+  <object class="GtkBox" id="_enterNone">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
   <object class="GtkBox" id="_enterPassword">
     <property name="visible">True</property>
     <property name="can-focus">False</property>

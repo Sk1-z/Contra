@@ -83,6 +83,8 @@ public class Normal : Login
     [UI] private Label _passwordError;
     [UI] private Entry _passwordEntry;
 
+    [UI] private Box _enterNone;
+
     public Normal() : base(new Builder("Login.Normal.glade"))
     {
         switch (Config.Security)
@@ -91,7 +93,6 @@ public class Normal : Login
                 {
                     Scene.Scenes = new(new Scene[] { new(_enterKey) });
                     _container.Add(_enterKey);
-                    _container.ReorderChild(_controlButtonContainer, 1);
                     break;
                 }
 
@@ -99,16 +100,17 @@ public class Normal : Login
                 {
                     Scene.Scenes = new(new Scene[] { new(_enterPassword) });
                     _container.Add(_enterPassword);
-                    _container.ReorderChild(_controlButtonContainer, 1);
                     break;
                 }
 
             case Config.SecurityLevel.None:
                 {
-                    AuthenticateUser();
+                    Scene.Scenes = new(new Scene[] { new(_enterNone) });
+                    _container.Add(_enterNone);
                     break;
                 }
         }
+        _container.ReorderChild(_controlButtonContainer, 1);
     }
 
     sealed override protected void AuthenticateUser()
@@ -154,6 +156,7 @@ public class Normal : Login
 
             case Config.SecurityLevel.None:
                 {
+                    _cryptor = new();
                     break;
                 }
         }
