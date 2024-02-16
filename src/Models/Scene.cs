@@ -26,7 +26,7 @@ public class Scene
     }
 
     public static int Index = 0;
-    public static Scene[] Scenes = new Scene[] { };
+    public static List<Scene> Scenes = new();
 
     public static Scene Current()
     {
@@ -40,6 +40,6 @@ public class Scene
 
     public static bool AtLast()
     {
-        return Index + 1 == Scenes.Length;
+        return Index + 1 == Scenes.Count();
     }
 }

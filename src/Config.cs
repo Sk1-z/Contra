@@ -4,24 +4,49 @@ namespace Contra;
 
 public static class Config
 {
+    public static readonly string Path =
+#if DEBUG
+@"test/";
+#else
+@"~/.config/contra";
+#endif
+
     public static readonly string ConfigPath =
 #if DEBUG
-@"debug.xml";
+@"test/debug.xml";
 #else
 @"~/.config/contra/contra.xml";
 #endif
 
     public static readonly string CheckPath =
 #if DEBUG
-@"check.dat";
+@"test/check.dat";
 #else
 @"~/.config/contra/check.dat";
 #endif
 
+    public static readonly string DataPath =
+#if DEBUG
+@"test/user.dat";
+#else
+@"~/.config/contra/user.dat";
+#endif
+
     public static void Get()
     {
-        if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath);
-        if (!File.Exists(CheckPath)) File.Create(CheckPath);
+        try
+        {
+            if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath);
+            if (!File.Exists(CheckPath)) File.Create(CheckPath);
+            if (!File.Exists(DataPath)) File.Create(DataPath);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Directory.CreateDirectory(Path);
+            if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath);
+            if (!File.Exists(CheckPath)) File.Create(CheckPath);
+            if (!File.Exists(DataPath)) File.Create(DataPath);
+        }
 
         try
         {

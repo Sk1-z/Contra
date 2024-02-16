@@ -89,7 +89,7 @@ public class Normal : Login
         {
             case Config.SecurityLevel.Key:
                 {
-                    Scene.Scenes = new Scene[] { new(_enterKey) };
+                    Scene.Scenes = new(new Scene[] { new(_enterKey) });
                     _container.Add(_enterKey);
                     _container.ReorderChild(_controlButtonContainer, 1);
                     break;
@@ -97,7 +97,7 @@ public class Normal : Login
 
             case Config.SecurityLevel.Password:
                 {
-                    Scene.Scenes = new Scene[] { new(_enterPassword) };
+                    Scene.Scenes = new(new Scene[] { new(_enterPassword) });
                     _container.Add(_enterPassword);
                     _container.ReorderChild(_controlButtonContainer, 1);
                     break;
@@ -241,10 +241,10 @@ public class Setup : Login
     public Setup() : base(new Builder("Login.Setup.glade"))
     {
         Config.Check = "Contrasena";
-        Scene.Scenes = new Scene[] {
+        Scene.Scenes = new(new Scene[] {
             new(_methodSelectBox),
             new(_noneBox)
-        };
+        });
         _cryptor = new();
 
         _keyWindow.Hide();

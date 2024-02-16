@@ -1,2 +1,1 @@
-rm debug.xml
-rm check.dat
+rm -r test/
