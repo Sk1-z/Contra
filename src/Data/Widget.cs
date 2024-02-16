@@ -4,8 +4,43 @@ namespace Contra.Models;
 
 public class EntryBox : Box
 {
+    private int _index;
+
+    public string Label
+    {
+        get => ((Entry)Children[1]).Text;
+        set { ((Entry)Children[1]).Text = value; ((Label)EntryManager.Rows[_index - 1].Child).Text = value; }
+    }
+
+    public string Username
+    {
+        get => ((Entry)((Box)Children[3]).Children[0]).Text;
+        set => ((Entry)((Box)Children[3]).Children[0]).Text = value;
+
+    }
+
+    public string Password
+    {
+        get => ((Entry)((Box)Children[5]).Children[0]).Text;
+        set => ((Entry)((Box)Children[5]).Children[0]).Text = value;
+    }
+
+    public string URL
+    {
+        get => ((Entry)((Box)Children[7]).Children[0]).Text;
+        set => ((Entry)((Box)Children[7]).Children[0]).Text = value;
+    }
+
+    public string Note
+    {
+        get => ((TextView)((ScrolledWindow)Children[9]).Child).Buffer.Text;
+        set => ((TextView)((ScrolledWindow)Children[9]).Child).Buffer.Text = value;
+    }
+
     public EntryBox(int index, Data.Entry entry)
     {
+        _index = index;
+
         Orientation = Orientation.Vertical;
         Margin = 20;
         Spacing = 20;
@@ -24,7 +59,7 @@ public class EntryBox : Box
             if (i == 0)
             {
                 fieldEntry.Text = entry.Label;
-                fieldEntry.Changed += (sender, e) => ((Label)EntryManager.Rows[index - 1].Child).Text = fieldEntry.Text;
+                fieldEntry.Changed += (sender, e) => ((Label)EntryManager.Rows[_index - 1].Child).Text = fieldEntry.Text;
 
                 Add(fieldEntry);
             }

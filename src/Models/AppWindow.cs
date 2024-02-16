@@ -1,3 +1,4 @@
+using System.Xml.Serialization;
 using Gtk;
 using UI = Gtk.Builder.ObjectAttribute;
 
@@ -6,6 +7,8 @@ namespace Contra.Models;
 public class AppWindow : Window
 {
     private Security.Cryptor _cryptor;
+
+    [UI] private Button _newBtn;
 
     [UI] private SearchEntry _passwordListSearch;
     [UI] private ListBox _passwordSelectionList;
@@ -24,6 +27,7 @@ public class AppWindow : Window
             {
                 _container.Remove(Scene.Current().Model);
                 Scene.Index--;
+                _passwordSelectionList.SelectRow(_passwordSelectionList.GetRowAtIndex(Scene.Index - 1));
                 _container.Add(Scene.Current().Model);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
@@ -38,6 +42,7 @@ public class AppWindow : Window
             {
                 _container.Remove(Scene.Current().Model);
                 Scene.Index++;
+                _passwordSelectionList.SelectRow(_passwordSelectionList.GetRowAtIndex(Scene.Index - 1));
                 _container.Add(Scene.Current().Model);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
@@ -75,6 +80,30 @@ public class AppWindow : Window
         }
     }
 
+    public void NewEntryEventHandler(object? sender, EventArgs e)
+    {
+        var em = new EntryManager(_passwordSelectionList, new("", ""));
+        _passwordSelectionList.SelectRow(em.Row);
+
+        _container.Remove(Scene.Current().Model);
+        Scene.Index = em.Index;
+        _container.Add(Scene.Current().Model);
+        _container.ReorderChild(_controlButtonContainer, 1);
+
+    }
+
+    public void ExitEventHandler(object? sender, EventArgs e)
+    {
+        // Save code goes here
+        // string xml = "";
+        // using (var sw = new StreamWriter(xml))
+        // {
+        //     new XmlSerializer(typeof(List<EntryBox>)).Serialize(sw, EntryManager.Boxes);
+        // }
+        // Console.WriteLine(xml);
+
+        Application.Quit();
+    }
 
     public AppWindow(Security.Cryptor cryptor) : this(new Builder("AppWindow.glade"))
     {
@@ -84,10 +113,12 @@ public class AppWindow : Window
     protected AppWindow(Builder builder) : base(builder.GetRawOwnedObject("App"))
     {
         builder.Autoconnect(this);
-        DeleteEvent += (sender, e) => Application.Quit();
+        DeleteEvent += ExitEventHandler;
 
         Scene.Index = 0;
         Scene.Scenes = new(new Scene[] { new(_initialScreen) });
+
+        _newBtn.Clicked += NewEntryEventHandler;
 
         _backBtn.Clicked += BackEventHandler;
         _nextBtn.Clicked += NextEventHandler;
