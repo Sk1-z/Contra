@@ -22,7 +22,7 @@ public partial class Cryptor
         {
             using (var aes = Aes.Create())
             {
-                byte[] iv = new byte[128 / 8];
+                byte[] iv = new byte[Size.Block(Size.Unit.Byte)];
                 Array.Copy(encryptedMsg, iv, iv.Length);
 
                 using (var decryptor = aes.CreateDecryptor(_key, iv))
@@ -62,6 +62,7 @@ public partial class Cryptor
 
         public byte[] Decrypt(byte[] msg)
         {
+            Console.WriteLine(Convert.ToBase64String(msg));
             byte[] salt = new byte[Size.Salt(Size.Unit.Byte)];
             Array.Copy(msg, salt, salt.Length);
 

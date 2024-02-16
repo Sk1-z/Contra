@@ -107,8 +107,8 @@ public class AppWindow : Window
     {
         _cryptor = cryptor;
 
-        using (var sr = new StreamReader(Config.DataPath))
-            Contra.Data.Storage.Restore(_passwordSelectionList, _cryptor.Decrypt(sr.ReadToEnd()));
+        string data = new StreamReader(Config.DataPath).ReadToEnd();
+        if (data.Length > 32) Contra.Data.Storage.Restore(_passwordSelectionList, _cryptor.Decrypt(data));
     }
 
     protected AppWindow(Builder builder) : base(builder.GetRawOwnedObject("App"))
@@ -126,13 +126,5 @@ public class AppWindow : Window
 
         _passwordSelectionList.ListRowActivated += RowActivatedEventHandler;
         _passwordListSearch.Changed += SearchEventHandler;
-
-        // for (int i = 1; i < 11; i++)
-        // {
-        //     new EntryManager(
-        //             _passwordSelectionList,
-        //             new($"{i}", "password", "user", "mom.com", "noted")
-        //     );
-        // }
     }
 }

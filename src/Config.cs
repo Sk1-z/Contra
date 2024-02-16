@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using System;
 
 namespace Contra;
 
@@ -8,28 +9,28 @@ public static class Config
 #if DEBUG
 @"test/";
 #else
-@"~/.config/contra";
+Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.config/contra/";
 #endif
 
     public static readonly string ConfigPath =
 #if DEBUG
 @"test/debug.xml";
 #else
-@"~/.config/contra/contra.xml";
+Path + "contra.xml";
 #endif
 
     public static readonly string CheckPath =
 #if DEBUG
 @"test/check.dat";
 #else
-@"~/.config/contra/check.dat";
+Path + "check.dat";
 #endif
 
     public static readonly string DataPath =
 #if DEBUG
 @"test/user.dat";
 #else
-@"~/.config/contra/user.dat";
+Path + "user.dat";
 #endif
 
     public static void Get()
