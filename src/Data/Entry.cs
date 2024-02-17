@@ -1,12 +1,15 @@
 namespace Contra.Data;
 
+[Serializable]
 public class Entry
 {
     public string Label;
+    public string Password;
     public string? Username;
-    public string? Password;
     public string? URL;
     public string? Note;
+
+    public Entry() { }
 
     public Entry(
             string label,

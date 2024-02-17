@@ -9,7 +9,11 @@ public class EntryBox : Box
     public string Label
     {
         get => ((Entry)Children[1]).Text;
-        set { ((Entry)Children[1]).Text = value; ((Label)EntryManager.Rows[_index - 1].Child).Text = value; }
+        set
+        {
+            ((Entry)Children[1]).Text = value;
+            ((Label)EntryManager.Rows[_index].Child).Text = value;
+        }
     }
 
     public string Username
@@ -23,6 +27,7 @@ public class EntryBox : Box
     {
         get => ((Entry)((Box)Children[5]).Children[0]).Text;
         set => ((Entry)((Box)Children[5]).Children[0]).Text = value;
+
     }
 
     public string URL
@@ -33,8 +38,41 @@ public class EntryBox : Box
 
     public string Note
     {
-        get => ((TextView)((ScrolledWindow)Children[9]).Child).Buffer.Text;
-        set => ((TextView)((ScrolledWindow)Children[9]).Child).Buffer.Text = value;
+        get => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text;
+        set => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text = value;
+
+    }
+
+    private void CopyToClipboard(string str)
+    {
+        Clipboard clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
+        clipboard.Text = str;
+    }
+
+    private void CopyUsernameEventHandler(object? sender, EventArgs e)
+    {
+        CopyToClipboard(Username);
+    }
+
+    private void CopyPasswordEventHandler(object? sender, EventArgs e)
+    {
+        CopyToClipboard(Password);
+    }
+
+    private void CopyURLEventHandler(object? sender, EventArgs e)
+    {
+        CopyToClipboard(URL);
+    }
+
+    public Data.Entry ToEntry()
+    {
+        return new(
+                Label,
+                Password,
+                Username,
+                URL,
+                Note
+                );
     }
 
     public EntryBox(int index, Data.Entry entry)
@@ -59,7 +97,7 @@ public class EntryBox : Box
             if (i == 0)
             {
                 fieldEntry.Text = entry.Label;
-                fieldEntry.Changed += (sender, e) => ((Label)EntryManager.Rows[_index - 1].Child).Text = fieldEntry.Text;
+                fieldEntry.Changed += (sender, e) => ((Label)EntryManager.Rows[_index].Child).Text = fieldEntry.Text;
 
                 Add(fieldEntry);
             }
@@ -70,25 +108,45 @@ public class EntryBox : Box
                 scrollWindow.VscrollbarPolicy = PolicyType.External;
                 scrollWindow.Expand = true;
 
+                var viewport = new Viewport();
+
                 var textView = new TextView();
                 textView.WrapMode = WrapMode.Word;
                 textView.Buffer.Text = entry.Note;
 
-                scrollWindow.Add(textView);
+                viewport.Add(textView);
+                scrollWindow.Add(viewport);
                 Add(scrollWindow);
             }
             else
             {
+                var copyBtn = new Button("Copy");
+
                 switch (i)
                 {
-                    case 1: { fieldEntry.Text = entry.Username; break; }
-                    case 2: { fieldEntry.Text = entry.Password; break; }
-                    case 3: { fieldEntry.Text = entry.URL; break; }
+                    case 1:
+                        {
+                            fieldEntry.Text = entry.Username;
+                            copyBtn.Clicked += CopyUsernameEventHandler;
+                            break;
+                        }
+                    case 2:
+                        {
+                            fieldEntry.Text = entry.Password;
+                            copyBtn.Clicked += CopyPasswordEventHandler;
+                            break;
+                        }
+                    case 3:
+                        {
+                            fieldEntry.Text = entry.URL;
+                            copyBtn.Clicked += CopyURLEventHandler;
+                            break;
+                        }
                 }
 
                 var copyBox = new Box(Orientation.Horizontal, 20);
                 copyBox.Add(fieldEntry);
-                copyBox.Add(new Button("Copy"));
+                copyBox.Add(copyBtn);
                 Add(copyBox);
             }
         }
@@ -120,27 +178,27 @@ public class EntryManager
     public static List<EntryBox> Boxes = new();
     public static List<EntryRow> Rows = new();
 
-    private Data.Entry _entry;
-
-    private static int _currentIndex = 1;
+    private static int _currentIndex = 0;
     public int Index;
     public EntryBox Box;
     public EntryRow Row;
 
-    public EntryManager(ListBox rowParent, Data.Entry entry) : this(_currentIndex, rowParent, entry)
+    public static List<Data.Entry> Entries()
     {
-        _currentIndex++;
+        var entries = new List<Data.Entry>();
+        foreach (EntryBox box in Boxes) entries.Add(box.ToEntry());
+        return entries;
     }
 
-    public EntryManager(int index, ListBox rowParent, Data.Entry entry)
+    public EntryManager(ListBox rowParent, Data.Entry entry)
     {
-        Index = index;
-        _entry = entry;
+        Index = _currentIndex;
+        _currentIndex++;
 
-        Row = new(index, rowParent, entry.Label);
+        Row = new(Index, rowParent, entry.Label);
         Rows.Add(Row);
 
-        Box = new(index, entry);
+        Box = new(Index, entry);
         Boxes.Add(Box);
         Scene.Scenes.Add(new(Box));
     }

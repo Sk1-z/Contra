@@ -9,76 +9,31 @@ public static class Config
 #if DEBUG
 @"test/";
 #else
-Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.config/contra/";
+Environment.GetFolderPath(Environment.OSVersion.Platform == PlatformID.Unix ? 
+        Environment.SpecialFolder.UserProfile :
+        Environment.SpecialFolder.Personal) + @"/.contra/";
 #endif
 
     public static readonly string ConfigPath =
 #if DEBUG
 @"test/debug.xml";
 #else
-Path + "contra.xml";
+Path + @"contra.xml";
 #endif
 
     public static readonly string CheckPath =
 #if DEBUG
 @"test/check.dat";
 #else
-Path + "check.dat";
+Path + @"check.dat";
 #endif
 
     public static readonly string DataPath =
 #if DEBUG
 @"test/user.dat";
 #else
-Path + "user.dat";
+Path + @"user.dat";
 #endif
-
-    public static void Get()
-    {
-        try
-        {
-            if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath);
-            if (!File.Exists(CheckPath)) File.Create(CheckPath);
-            if (!File.Exists(DataPath)) File.Create(DataPath);
-        }
-        catch (DirectoryNotFoundException)
-        {
-            Directory.CreateDirectory(Path);
-            if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath);
-            if (!File.Exists(CheckPath)) File.Create(CheckPath);
-            if (!File.Exists(DataPath)) File.Create(DataPath);
-        }
-
-        try
-        {
-            Internal = (Fields)new XmlSerializer(typeof(Fields)).Deserialize(new StreamReader(ConfigPath))!;
-        }
-        catch
-        {
-            Set();
-        }
-    }
-
-    public static void Set()
-    {
-        if (Internal == null)
-        {
-            Internal = new Fields
-            {
-                Setup = false,
-                Security = SecurityLevel.None
-            };
-
-            Check = "Contrasena";
-        }
-
-        new XmlSerializer(typeof(Fields)).Serialize(new StreamWriter(ConfigPath), Internal);
-    }
-
-    public static void Clean()
-    {
-        File.Delete(ConfigPath);
-    }
 
     public enum SecurityLevel
     {
@@ -93,23 +48,61 @@ Path + "user.dat";
         public SecurityLevel Security { get; set; }
     }
 
-    static Fields? Internal = null;
+    private static Fields? _internal = null;
 
     public static bool Setup
     {
-        get => Internal!.Setup;
-        set { Internal!.Setup = value; Set(); }
+        get => _internal!.Setup;
+        set { _internal!.Setup = value; Set(); }
     }
 
     public static SecurityLevel Security
     {
-        get => Internal!.Security;
-        set { Internal!.Security = value; Set(); }
+        get => _internal!.Security;
+        set { _internal!.Security = value; Set(); }
     }
 
     public static string Check
     {
-        get { var sr = new StreamReader(CheckPath); return sr.ReadToEnd(); }
-        set { var sw = new StreamWriter(CheckPath); sw.Write(value); sw.Flush(); }
+        get
+        {
+            var sr = new StreamReader(CheckPath);
+            return sr.ReadToEnd();
+        }
+        set { using (var sw = new StreamWriter(CheckPath)) sw.Write(value); }
+    }
+
+    public static void Get()
+    {
+        if (!Directory.Exists(Path)) Directory.CreateDirectory(Path);
+        if (!File.Exists(ConfigPath)) File.CreateText(ConfigPath).Close();
+        if (!File.Exists(CheckPath)) File.Create(CheckPath).Close();
+        if (!File.Exists(DataPath)) File.Create(DataPath).Close();
+
+        try
+        {
+            _internal = (Fields)new XmlSerializer(typeof(Fields)).Deserialize(new StreamReader(ConfigPath))!;
+        }
+        catch
+        {
+            Set();
+        }
+    }
+
+    public static void Set()
+    {
+        if (_internal == null)
+        {
+            _internal = new Fields
+            {
+                Setup = false,
+                Security = SecurityLevel.None
+            };
+
+            Check = "Contrasena";
+        }
+
+        new XmlSerializer(typeof(Fields)).Serialize(new StreamWriter(ConfigPath), _internal);
     }
 }
+

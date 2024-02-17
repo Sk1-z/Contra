@@ -49,11 +49,11 @@ public class AppWindow : Window
         }
     }
 
-    public void RowActivatedEventHandler(object? sender, ListRowActivatedArgs e)
+    private void RowActivatedEventHandler(object? sender, ListRowActivatedArgs e)
     {
         if (Scene.Current().Next())
         {
-            Scene.Index = Convert.ToInt32(e.Row.Name);
+            Scene.Index = Convert.ToInt32(e.Row.Name) + 1;
             _container.Remove(_container.Children[0]);
             _container.Add(Scene.Current().Model);
             _container.ShowAll();
@@ -61,7 +61,7 @@ public class AppWindow : Window
         }
     }
 
-    public void SearchEventHandler(object? sender, EventArgs e)
+    private void SearchEventHandler(object? sender, EventArgs e)
     {
         _passwordSelectionList.Children.ToList().ForEach((child) => _passwordSelectionList.Remove(child));
 
@@ -80,20 +80,20 @@ public class AppWindow : Window
         }
     }
 
-    public void NewEntryEventHandler(object? sender, EventArgs e)
+    private void NewEntryEventHandler(object? sender, EventArgs e)
     {
         var em = new EntryManager(_passwordSelectionList, new("", ""));
         _passwordSelectionList.SelectRow(em.Row);
 
         _container.Remove(Scene.Current().Model);
-        Scene.Index = em.Index;
+        Scene.Index = em.Index + 1;
         _container.Add(Scene.Current().Model);
         _container.ReorderChild(_controlButtonContainer, 1);
     }
 
-    public void ExitEventHandler(object? sender, EventArgs e)
+    private void ExitEventHandler(object? sender, EventArgs e)
     {
-        string data = Contra.Data.Storage.Store(EntryManager.Boxes);
+        string data = Contra.Data.Storage.Store();
         using (var sw = new StreamWriter(Config.DataPath))
         {
             sw.Write(_cryptor.Encrypt(data));
@@ -111,7 +111,7 @@ public class AppWindow : Window
         if (data.Length > 32) Contra.Data.Storage.Restore(_passwordSelectionList, _cryptor.Decrypt(data));
     }
 
-    protected AppWindow(Builder builder) : base(builder.GetRawOwnedObject("App"))
+    private AppWindow(Builder builder) : base(builder.GetRawOwnedObject("App"))
     {
         builder.Autoconnect(this);
         DeleteEvent += ExitEventHandler;
