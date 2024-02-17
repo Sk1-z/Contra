@@ -8,39 +8,47 @@ public class EntryBox : Box
 
     public string Label
     {
-        get => ((Entry)Children[1]).Text;
-        set
-        {
-            ((Entry)Children[1]).Text = value;
-            ((Label)EntryManager.Rows[_index].Child).Text = value;
-        }
+        get => ((Entry)((Box)Children[1]).Children[0]).Text;
+        // set
+        // {
+        //     ((Entry)((Box)Children[1]).Children[0]).Text = value;
+        //     ((Label)EntryManager.Rows[_index]!.Child).Text = value;
+        // }
     }
 
     public string Username
     {
         get => ((Entry)((Box)Children[3]).Children[0]).Text;
-        set => ((Entry)((Box)Children[3]).Children[0]).Text = value;
-
+        // set => ((Entry)((Box)Children[3]).Children[0]).Text = value;
     }
 
     public string Password
     {
         get => ((Entry)((Box)Children[5]).Children[0]).Text;
-        set => ((Entry)((Box)Children[5]).Children[0]).Text = value;
-
+        // set => ((Entry)((Box)Children[5]).Children[0]).Text = value;
     }
 
     public string URL
     {
         get => ((Entry)((Box)Children[7]).Children[0]).Text;
-        set => ((Entry)((Box)Children[7]).Children[0]).Text = value;
+        // set => ((Entry)((Box)Children[7]).Children[0]).Text = value;
     }
 
     public string Note
     {
         get => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text;
-        set => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text = value;
+        // set => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text = value;
+    }
 
+    public Data.Entry ToEntry()
+    {
+        return new(
+                Label,
+                Password,
+                Username,
+                URL,
+                Note
+                );
     }
 
     private void CopyToClipboard(string str)
@@ -64,15 +72,21 @@ public class EntryBox : Box
         CopyToClipboard(URL);
     }
 
-    public Data.Entry ToEntry()
+    private void LabelChangedEventHandler(object? sender, EventArgs e)
     {
-        return new(
-                Label,
-                Password,
-                Username,
-                URL,
-                Note
-                );
+        ((Label)EntryManager.Rows[_index]!.Child).Text = Label;
+    }
+
+    private void DeleteEventHandler(object? sender, EventArgs e)
+    {
+        this.Destroy();
+        EntryManager.Rows[_index]!.Destroy();
+
+        Scene.Scenes[_index + 1] = null;
+        EntryManager.Boxes[_index] = null;
+        EntryManager.Rows[_index] = null;
+
+        EntryManager.OnDelete();
     }
 
     public EntryBox(int index, Data.Entry entry)
@@ -94,14 +108,7 @@ public class EntryBox : Box
             var fieldEntry = new Entry();
             fieldEntry.Hexpand = true;
 
-            if (i == 0)
-            {
-                fieldEntry.Text = entry.Label;
-                fieldEntry.Changed += (sender, e) => ((Label)EntryManager.Rows[_index].Child).Text = fieldEntry.Text;
-
-                Add(fieldEntry);
-            }
-            else if (i == 4)
+            if (i == 4)
             {
                 var scrollWindow = new ScrolledWindow();
                 scrollWindow.HscrollbarPolicy = PolicyType.Never;
@@ -120,33 +127,41 @@ public class EntryBox : Box
             }
             else
             {
-                var copyBtn = new Button("Copy");
+                var eventBtn = new Button("Copy");
 
                 switch (i)
                 {
+                    case 0:
+                        {
+                            fieldEntry.Text = entry.Label;
+                            fieldEntry.Changed += LabelChangedEventHandler;
+                            eventBtn.Label = "Delete";
+                            eventBtn.Clicked += DeleteEventHandler;
+                            break;
+                        }
                     case 1:
                         {
                             fieldEntry.Text = entry.Username;
-                            copyBtn.Clicked += CopyUsernameEventHandler;
+                            eventBtn.Clicked += CopyUsernameEventHandler;
                             break;
                         }
                     case 2:
                         {
                             fieldEntry.Text = entry.Password;
-                            copyBtn.Clicked += CopyPasswordEventHandler;
+                            eventBtn.Clicked += CopyPasswordEventHandler;
                             break;
                         }
                     case 3:
                         {
                             fieldEntry.Text = entry.URL;
-                            copyBtn.Clicked += CopyURLEventHandler;
+                            eventBtn.Clicked += CopyURLEventHandler;
                             break;
                         }
                 }
 
                 var copyBox = new Box(Orientation.Horizontal, 20);
                 copyBox.Add(fieldEntry);
-                copyBox.Add(copyBtn);
+                copyBox.Add(eventBtn);
                 Add(copyBox);
             }
         }
@@ -157,17 +172,16 @@ public class EntryBox : Box
 
 public class EntryRow : ListBoxRow
 {
+    private int _index;
+
     public EntryRow(int index, ListBox rowParent, string label)
     {
-        Visible = true;
-        Name = $"{index}";
+        _index = index;
+        Name = $"{_index}";
 
-        using (var entryLabel = new Label(label))
-        {
-            entryLabel.Visible = true;
-            Add(entryLabel);
-        }
+        var entryLabel = new Label(label);
 
+        this.Add(entryLabel);
         rowParent.Add(this);
         rowParent.ShowAll();
     }
@@ -175,8 +189,11 @@ public class EntryRow : ListBoxRow
 
 public class EntryManager
 {
-    public static List<EntryBox> Boxes = new();
-    public static List<EntryRow> Rows = new();
+    public delegate void OnDeleteHandler();
+
+    public static OnDeleteHandler OnDelete;
+    public static List<EntryBox?> Boxes = new();
+    public static List<EntryRow?> Rows = new();
 
     private static int _currentIndex = 0;
     public int Index;
@@ -186,8 +203,26 @@ public class EntryManager
     public static List<Data.Entry> Entries()
     {
         var entries = new List<Data.Entry>();
-        foreach (EntryBox box in Boxes) entries.Add(box.ToEntry());
+        foreach (EntryBox? box in Boxes) if (box != null) entries.Add(box.ToEntry());
         return entries;
+    }
+
+    public static bool NoEntries()
+    {
+        foreach (Box? box in Boxes) if (box != null) return false;
+        return true;
+    }
+
+    public static int FirstEntryIndex()
+    {
+        for (int i = 0; i < Boxes.Count() - 1; i++) if (Boxes[i] != null) return i;
+        return -1;
+    }
+
+    public static int LastEntryIndex()
+    {
+        for (int i = Boxes.Count() - 1; i > -1; i--) if (Boxes[i] != null) return i;
+        return -1;
     }
 
     public EntryManager(ListBox rowParent, Data.Entry entry)

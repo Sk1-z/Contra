@@ -18,19 +18,33 @@ public class Scene
         Next = () => { return true; };
     }
 
-    public Scene(Box model, SceneEventHandler? back, SceneEventHandler? next)
+    public Scene(Box model, SceneEventHandler? back, SceneEventHandler? next) : this(model)
     {
-        Model = model;
         if (back != null) Back = back;
         if (next != null) Next = next;
     }
 
     public static int Index = 0;
-    public static List<Scene> Scenes = new();
+    public static List<Scene?> Scenes = new();
 
     public static Scene Current()
     {
-        return Scenes[Index];
+        return Scenes[Index]!;
+    }
+
+    public static Scene Current(bool reverse)
+    {
+        if (Scenes[Index] == null)
+        {
+            while (Scenes[Index] == null)
+            {
+                if (reverse) Index--;
+                else Index++;
+                if (Index == -1) return Scenes[0]!;
+                if (Index == Scenes.Count()) return Scenes[-1]!;
+            }
+        }
+        return Scenes[Index]!;
     }
 
     public static bool AtFirst()

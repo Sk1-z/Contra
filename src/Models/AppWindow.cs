@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Gtk;
 using UI = Gtk.Builder.ObjectAttribute;
 
@@ -23,12 +22,18 @@ public class AppWindow : Window
     {
         if (Scene.Current().Back())
         {
-            if (Scene.Index > 1)
+            _container.Remove(Scene.Current().Model);
+            if (Scene.Index == EntryManager.FirstEntryIndex() + 1) Scene.Index = EntryManager.LastEntryIndex() + 1;
+            else Scene.Index--;
+
+            if (EntryManager.NoEntries())
             {
-                _container.Remove(Scene.Current().Model);
-                Scene.Index--;
-                _passwordSelectionList.SelectRow(_passwordSelectionList.GetRowAtIndex(Scene.Index - 1));
-                _container.Add(Scene.Current().Model);
+                ResetScenes();
+            }
+            else
+            {
+                _container.Add(Scene.Current(false).Model);
+                _passwordSelectionList.SelectRow(EntryManager.Rows[Scene.Index - 1]);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
         }
@@ -38,12 +43,19 @@ public class AppWindow : Window
     {
         if (Scene.Current().Next())
         {
-            if (!Scene.AtLast())
+            _container.Remove(Scene.Current().Model);
+            if (Scene.Index == EntryManager.LastEntryIndex() + 1) Scene.Index = EntryManager.FirstEntryIndex() + 1;
+            else Scene.Index++;
+
+            if (EntryManager.NoEntries())
             {
-                _container.Remove(Scene.Current().Model);
-                Scene.Index++;
-                _passwordSelectionList.SelectRow(_passwordSelectionList.GetRowAtIndex(Scene.Index - 1));
-                _container.Add(Scene.Current().Model);
+                ResetScenes();
+            }
+            else
+            {
+                _container.Add(Scene.Current(false).Model);
+                Console.WriteLine($"Index: {Scene.Index}");
+                _passwordSelectionList.SelectRow(EntryManager.Rows[Scene.Index - 1]);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
         }
@@ -53,10 +65,9 @@ public class AppWindow : Window
     {
         if (Scene.Current().Next())
         {
+            _container.Remove(Scene.Current().Model);
             Scene.Index = Convert.ToInt32(e.Row.Name) + 1;
-            _container.Remove(_container.Children[0]);
             _container.Add(Scene.Current().Model);
-            _container.ShowAll();
             _container.ReorderChild(_controlButtonContainer, 1);
         }
     }
@@ -67,17 +78,10 @@ public class AppWindow : Window
 
         string? search = _passwordListSearch.Text;
 
-        foreach (EntryRow row in EntryManager.Rows)
-        {
-            if (search == null)
-            {
-                _passwordSelectionList.Add(row);
-            }
-            else if (((Label)row.Child).Text.Contains(search))
-            {
-                _passwordSelectionList.Add(row);
-            }
-        }
+        if (search == null) foreach (EntryRow? row in EntryManager.Rows) _passwordSelectionList.Add(row);
+        else foreach (EntryRow? row in EntryManager.Rows)
+                if (row != null && ((Label)((Box)row.Child).Children[0]).Text.Contains(search))
+                    _passwordSelectionList.Add(row);
     }
 
     private void NewEntryEventHandler(object? sender, EventArgs e)
@@ -103,18 +107,45 @@ public class AppWindow : Window
         Application.Quit();
     }
 
+    private void ResetScenes()
+    {
+        if (Scene.Scenes.Count() == 2 || EntryManager.NoEntries())
+        {
+            Scene.Index = 0;
+            _container.Add(_initialScreen);
+        }
+        else if (Scene.Index == 1)
+        {
+            Scene.Index++;
+            _container.Add(Scene.Current(false).Model);
+            _passwordSelectionList.SelectRow(EntryManager.Rows[Scene.Index - 1]);
+        }
+        else
+        {
+            Scene.Index--;
+            _container.Add(Scene.Current(true).Model);
+            _passwordSelectionList.SelectRow(EntryManager.Rows[Scene.Index - 1]);
+        }
+        _container.ReorderChild(_controlButtonContainer, 1);
+
+    }
+
     public AppWindow(Security.Cryptor cryptor) : this(new Builder("AppWindow.glade"))
     {
         _cryptor = cryptor;
 
         string data = new StreamReader(Config.DataPath).ReadToEnd();
         if (data.Length > 32) Contra.Data.Storage.Restore(_passwordSelectionList, _cryptor.Decrypt(data));
+
+        if (Scene.Scenes.Count() > 1) NextEventHandler(_nextBtn, new EventArgs());
     }
 
     private AppWindow(Builder builder) : base(builder.GetRawOwnedObject("App"))
     {
         builder.Autoconnect(this);
         DeleteEvent += ExitEventHandler;
+
+        EntryManager.OnDelete = ResetScenes;
 
         Scene.Index = 0;
         Scene.Scenes = new(new Scene[] { new(_initialScreen) });
