@@ -7,6 +7,9 @@ public class AppWindow : Window
 {
     private Security.Cryptor _cryptor;
 
+    [UI] private Button _configureBtn;
+    [UI] private Button _generatorBtn;
+
     [UI] private Button _newBtn;
 
     [UI] private SearchEntry _passwordListSearch;
@@ -54,7 +57,6 @@ public class AppWindow : Window
             else
             {
                 _container.Add(Scene.Current(false).Model);
-                Console.WriteLine($"Index: {Scene.Index}");
                 _passwordSelectionList.SelectRow(EntryManager.Rows[Scene.Index - 1]);
                 _container.ReorderChild(_controlButtonContainer, 1);
             }
@@ -63,7 +65,7 @@ public class AppWindow : Window
 
     private void RowActivatedEventHandler(object? sender, ListRowActivatedArgs e)
     {
-        if (Scene.Current().Next())
+        if (Scene.Current().Next() && Scene.Current().Back())
         {
             _container.Remove(Scene.Current().Model);
             Scene.Index = Convert.ToInt32(e.Row.Name) + 1;
@@ -130,6 +132,17 @@ public class AppWindow : Window
 
     }
 
+    private void NewConfigureEventHandler(object? sender, EventArgs e)
+    {
+        using (var sr = new StreamReader(Config.DataPath))
+            App.AddWindow(new ConfigureWindow(this));
+    }
+
+    private void NewGeneratorEventHandler(object? sender, EventArgs e)
+    {
+
+    }
+
     public AppWindow(Security.Cryptor cryptor) : this(new Builder("AppWindow.glade"))
     {
         _cryptor = cryptor;
@@ -150,6 +163,9 @@ public class AppWindow : Window
         Scene.Index = 0;
         Scene.Scenes = new(new Scene[] { new(_initialScreen) });
 
+        _configureBtn.Clicked += NewConfigureEventHandler;
+        _generatorBtn.Clicked += NewGeneratorEventHandler;
+
         _newBtn.Clicked += NewEntryEventHandler;
 
         _backBtn.Clicked += BackEventHandler;
@@ -157,5 +173,10 @@ public class AppWindow : Window
 
         _passwordSelectionList.ListRowActivated += RowActivatedEventHandler;
         _passwordListSearch.Changed += SearchEventHandler;
+    }
+
+    public void ChangeCryptor(Security.Cryptor cryptor)
+    {
+        _cryptor = cryptor;
     }
 }

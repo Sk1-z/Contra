@@ -3,14 +3,14 @@ using UI = Gtk.Builder.ObjectAttribute;
 
 namespace Contra.Models;
 
-public abstract class Login : Window
+public abstract class LoginWindow : Window
 {
     [UI] protected Box _container;
     [UI] protected Box _controlButtonContainer;
 
     [UI] private Button _cancelBtn;
-    [UI] private Button _backBtn;
-    [UI] private Button _nextBtn;
+    [UI] protected Button _backBtn;
+    [UI] protected Button _nextBtn;
 
     protected Security.Cryptor _cryptor;
 
@@ -55,7 +55,7 @@ public abstract class Login : Window
         }
     }
 
-    protected Login(Builder builder) : base(builder.GetRawOwnedObject("Login"))
+    protected LoginWindow(Builder builder) : base(builder.GetRawOwnedObject("Login"))
     {
         builder.Autoconnect(this);
         DeleteEvent += (sender, e) => this.Hide();
@@ -67,13 +67,24 @@ public abstract class Login : Window
 
     protected abstract void AuthenticateUser();
 
-    public static Login View()
+    public static void View()
     {
-        return Config.Setup ? new Normal() : new Setup();
+        if (Config.Setup)
+        {
+            if (Config.Security == Config.SecurityLevel.None)
+            {
+                App.AddWindow(new AppWindow(new()));
+            }
+            else
+            {
+                App.AddWindow(new Login());
+            }
+        }
+        else App.AddWindow(new Setup());
     }
 }
 
-public class Normal : Login
+public class Login : LoginWindow
 {
     [UI] private Box _enterKey;
     [UI] private Label _keyError;
@@ -83,9 +94,7 @@ public class Normal : Login
     [UI] private Label _passwordError;
     [UI] private Entry _passwordEntry;
 
-    [UI] private Box _enterNone;
-
-    public Normal() : base(new Builder("Login.Normal.glade"))
+    public Login() : base(new Builder("LoginWindow.Normal.glade"))
     {
         switch (Config.Security)
         {
@@ -100,13 +109,6 @@ public class Normal : Login
                 {
                     Scene.Scenes = new(new Scene[] { new(_enterPassword) });
                     _container.Add(_enterPassword);
-                    break;
-                }
-
-            case Config.SecurityLevel.None:
-                {
-                    Scene.Scenes = new(new Scene[] { new(_enterNone) });
-                    _container.Add(_enterNone);
                     break;
                 }
         }
@@ -153,12 +155,6 @@ public class Normal : Login
                     }
                     break;
                 }
-
-            case Config.SecurityLevel.None:
-                {
-                    _cryptor = new();
-                    break;
-                }
         }
 
         this.Destroy();
@@ -166,7 +162,7 @@ public class Normal : Login
     }
 }
 
-public class Setup : Login
+public class Setup : LoginWindow
 {
     [UI] private Box _methodSelectBox;
 
@@ -178,7 +174,7 @@ public class Setup : Login
     [UI] private RadioButton _passwordSelect;
     [UI] private RadioButton _noneSelect;
 
-    private void MethodSelectEventHandler(object? sender, EventArgs e)
+    private void MethodSelectedEventHandler(object? sender, EventArgs e)
     {
         if (_keySelect.Active)
         {
@@ -188,12 +184,12 @@ public class Setup : Login
         else if (_passwordSelect.Active)
         {
             Config.Security = Config.SecurityLevel.Password;
-            Scene.Scenes[1] = new(_passwordBox, null, SubmitPasswordEventHandler);
+            Scene.Scenes[1] = new(_passwordBox, null, PasswordChosenEventHandler);
         }
         else if (_noneSelect.Active)
         {
             Config.Security = Config.SecurityLevel.None;
-            Scene.Scenes[1] = new(_noneBox, null, NoSecuritySelectEventHandler);
+            Scene.Scenes[1] = new(_noneBox, null, NoneChosenEventHandler);
         }
     }
 
@@ -203,20 +199,19 @@ public class Setup : Login
     [UI] private Label _keyLabel;
     [UI] private Button _closeKeyWindowBtn;
 
-    private void GenerateKeyEventHandler(object? sender, EventArgs e)
+    private void KeyChosenEventHandler(object? sender, EventArgs e)
     {
-        Security.Key key = new();
+        var key = new Security.Key();
 
-        _keyLabel.Text = key.ToString();
         _cryptor = new(key);
-        _keyWindow.ShowAll();
+        Security.Key.AsWindow(key);
     }
 
     [UI] private Entry _passwordEntry;
     [UI] private Entry _passwordEntryConfirm;
     [UI] private Label _passwordLabel;
 
-    private bool SubmitPasswordEventHandler()
+    private bool PasswordChosenEventHandler()
     {
         if (_passwordEntry.Text.Length < 8)
         {
@@ -235,13 +230,13 @@ public class Setup : Login
         return false;
     }
 
-    private bool NoSecuritySelectEventHandler()
+    private bool NoneChosenEventHandler()
     {
         _cryptor = new();
         return true;
     }
 
-    public Setup() : base(new Builder("Login.Setup.glade"))
+    public Setup() : base(new Builder("LoginWindow.Setup.glade"))
     {
         Config.Check = "Contrasena";
         Scene.Scenes = new(new Scene[] {
@@ -250,14 +245,11 @@ public class Setup : Login
         });
         _cryptor = new();
 
-        _keyWindow.Hide();
-        _closeKeyWindowBtn.Clicked += (sender, e) => _keyWindow.Hide();
+        _keySelect.Toggled += MethodSelectedEventHandler;
+        _passwordSelect.Toggled += MethodSelectedEventHandler;
+        _noneSelect.Toggled += MethodSelectedEventHandler;
 
-        _keySelect.Toggled += MethodSelectEventHandler;
-        _passwordSelect.Toggled += MethodSelectEventHandler;
-        _noneSelect.Toggled += MethodSelectEventHandler;
-
-        _newKeyBtn.Clicked += GenerateKeyEventHandler;
+        _newKeyBtn.Clicked += KeyChosenEventHandler;
     }
 
     sealed override protected void AuthenticateUser()

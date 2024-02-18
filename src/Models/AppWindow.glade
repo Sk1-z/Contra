@@ -8,6 +8,7 @@
     <property name="window-position">center</property>
     <property name="default-width">1280</property>
     <property name="default-height">720</property>
+    <property name="icon-name">security-high</property>
     <property name="gravity">north</property>
     <child>
       <object class="GtkPaned">
@@ -24,8 +25,8 @@
             <property name="orientation">vertical</property>
             <property name="spacing">20</property>
             <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">Settings</property>
+              <object class="GtkButton" id="_configureBtn">
+                <property name="label" translatable="yes">Configure</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
@@ -37,7 +38,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="_generatorBtn">
                 <property name="label" translatable="yes">Generator</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>

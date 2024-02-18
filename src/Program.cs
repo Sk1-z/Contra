@@ -4,21 +4,21 @@ namespace Contra;
 
 public static class App
 {
-    private static Application _App = new(null, GLib.ApplicationFlags.None);
+    private static Application _app = new(null, GLib.ApplicationFlags.None);
 
     public static void AddWindow(Window window)
     {
-        _App.AddWindow(window);
-        window.Show();
+        _app.AddWindow(window);
+        window.ShowAll();
     }
 
     public static void Main()
     {
         Config.Get();
         Application.Init();
-        _App.Register(GLib.Cancellable.Current);
+        _app.Register(GLib.Cancellable.Current);
 
-        AddWindow(Models.Login.View());
+        Models.LoginWindow.View();
         Application.Run();
     }
 }

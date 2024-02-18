@@ -71,6 +71,17 @@ Path + @"user.dat";
         set { using (var sw = new StreamWriter(CheckPath)) sw.Write(value); }
     }
 
+    public static void Reset()
+    {
+        _internal = new Fields
+        {
+            Setup = false,
+            Security = SecurityLevel.None
+        };
+
+        Check = "Contrasena";
+    }
+
     public static void Get()
     {
         if (!Directory.Exists(Path)) Directory.CreateDirectory(Path);
@@ -90,17 +101,7 @@ Path + @"user.dat";
 
     public static void Set()
     {
-        if (_internal == null)
-        {
-            _internal = new Fields
-            {
-                Setup = false,
-                Security = SecurityLevel.None
-            };
-
-            Check = "Contrasena";
-        }
-
+        if (_internal == null) Reset();
         new XmlSerializer(typeof(Fields)).Serialize(new StreamWriter(ConfigPath), _internal);
     }
 }

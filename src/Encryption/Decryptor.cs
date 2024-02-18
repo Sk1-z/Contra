@@ -62,7 +62,6 @@ public partial class Cryptor
 
         public byte[] Decrypt(byte[] msg)
         {
-            Console.WriteLine(Convert.ToBase64String(msg));
             byte[] salt = new byte[Size.Salt(Size.Unit.Byte)];
             Array.Copy(msg, salt, salt.Length);
 

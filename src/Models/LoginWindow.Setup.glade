@@ -11,6 +11,7 @@
     <property name="window-position">center</property>
     <property name="default-width">500</property>
     <property name="default-height">300</property>
+    <property name="icon-name">preferences-other</property>
     <property name="urgency-hint">True</property>
     <property name="deletable">False</property>
     <property name="gravity">north</property>
@@ -215,61 +216,6 @@
       </packing>
     </child>
   </object>
-  <object class="GtkWindow" id="_keyWindow">
-    <property name="can-focus">False</property>
-    <property name="title" translatable="yes"> </property>
-    <property name="resizable">False</property>
-    <property name="modal">True</property>
-    <property name="icon-name">security-high</property>
-    <property name="deletable">False</property>
-    <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="hexpand">True</property>
-        <property name="vexpand">True</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">20</property>
-        <child>
-          <object class="GtkLabel" id="_keyLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-start">20</property>
-            <property name="margin-end">20</property>
-            <property name="margin-top">20</property>
-            <property name="margin-bottom">20</property>
-            <property name="label" translatable="yes">Key</property>
-            <property name="selectable">True</property>
-            <attributes>
-              <attribute name="weight" value="ultrabold"/>
-              <attribute name="scale" value="1.5"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="_closeKeyWindowBtn">
-            <property name="label" translatable="yes">Close</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="margin-start">20</property>
-            <property name="margin-end">20</property>
-            <property name="margin-bottom">20</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
   <object class="GtkBox" id="_noneBox">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -282,8 +228,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="vexpand">True</property>
-        <property name="label" translatable="yes">Warning
-Your passwords will be stored locally as plain text. You can change this later.</property>
+        <property name="label" translatable="yes">Warning Your passwords will be stored locally as plain text. You can change this later.</property>
         <property name="justify">center</property>
         <property name="wrap">True</property>
         <property name="width-chars">0</property>

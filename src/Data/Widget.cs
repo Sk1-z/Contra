@@ -9,35 +9,26 @@ public class EntryBox : Box
     public string Label
     {
         get => ((Entry)((Box)Children[1]).Children[0]).Text;
-        // set
-        // {
-        //     ((Entry)((Box)Children[1]).Children[0]).Text = value;
-        //     ((Label)EntryManager.Rows[_index]!.Child).Text = value;
-        // }
     }
 
     public string Username
     {
         get => ((Entry)((Box)Children[3]).Children[0]).Text;
-        // set => ((Entry)((Box)Children[3]).Children[0]).Text = value;
     }
 
     public string Password
     {
         get => ((Entry)((Box)Children[5]).Children[0]).Text;
-        // set => ((Entry)((Box)Children[5]).Children[0]).Text = value;
     }
 
     public string URL
     {
         get => ((Entry)((Box)Children[7]).Children[0]).Text;
-        // set => ((Entry)((Box)Children[7]).Children[0]).Text = value;
     }
 
     public string Note
     {
         get => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text;
-        // set => ((TextView)((Viewport)((ScrolledWindow)Children[9]).Child).Child).Buffer.Text = value;
     }
 
     public Data.Entry ToEntry()
@@ -197,6 +188,7 @@ public class EntryManager
 
     private static int _currentIndex = 0;
     public int Index;
+
     public EntryBox Box;
     public EntryRow Row;
 
@@ -225,6 +217,12 @@ public class EntryManager
         return -1;
     }
 
+    private bool SceneChangeEventHandler()
+    {
+        if (Box.Label == null || Box.Label == "" || Box.Label.Trim() == "") return false;
+        return true;
+    }
+
     public EntryManager(ListBox rowParent, Data.Entry entry)
     {
         Index = _currentIndex;
@@ -233,9 +231,9 @@ public class EntryManager
         Row = new(Index, rowParent, entry.Label);
         Rows.Add(Row);
 
-        Box = new(Index, entry);
+        Box = new EntryBox(Index, entry);
         Boxes.Add(Box);
-        Scene.Scenes.Add(new(Box));
+        Scene.Scenes.Add(new(Box, SceneChangeEventHandler, SceneChangeEventHandler));
     }
 }
 
