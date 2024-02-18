@@ -68,7 +68,7 @@ public class AppWindow : Window
         if (Scene.Current().Next() && Scene.Current().Back())
         {
             _container.Remove(Scene.Current().Model);
-            Scene.Index = Convert.ToInt32(e.Row.Name) + 1;
+            Scene.Index = Int32.Parse(e.Row.Name) + 1;
             _container.Add(Scene.Current().Model);
             _container.ReorderChild(_controlButtonContainer, 1);
         }
@@ -140,7 +140,7 @@ public class AppWindow : Window
 
     private void NewGeneratorEventHandler(object? sender, EventArgs e)
     {
-
+        App.AddWindow(new GeneratorWindow());
     }
 
     public AppWindow(Security.Cryptor cryptor) : this(new Builder("AppWindow.glade"))
