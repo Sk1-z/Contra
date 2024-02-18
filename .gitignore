@@ -1,6 +1,9 @@
 bin/
 obj/
 test/
+Contra/
+*.zip
+*.tar
 
 # Glade is weird
 *.glade~

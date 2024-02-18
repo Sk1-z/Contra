@@ -195,10 +195,6 @@ public class Setup : LoginWindow
 
     [UI] private Button _newKeyBtn;
 
-    [UI] private Window _keyWindow;
-    [UI] private Label _keyLabel;
-    [UI] private Button _closeKeyWindowBtn;
-
     private void KeyChosenEventHandler(object? sender, EventArgs e)
     {
         var key = new Security.Key();
