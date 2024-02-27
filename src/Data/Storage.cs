@@ -18,9 +18,6 @@ public static class Storage
     {
         var entries = (List<Entry>)new XmlSerializer(typeof(List<Entry>)).Deserialize(new StringReader(data))!;
 
-        foreach (Entry entry in entries)
-        {
-            new Models.EntryManager(rowParent, entry);
-        }
+        foreach (Entry entry in entries) new Models.EntryManager(entry);
     }
 }

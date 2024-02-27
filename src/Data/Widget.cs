@@ -4,7 +4,9 @@ namespace Contra.Models;
 
 public class EntryBox : Box
 {
-    private int _index;
+    public int Index;
+
+    public int Order;
 
     public string Label
     {
@@ -34,6 +36,7 @@ public class EntryBox : Box
     public Data.Entry ToEntry()
     {
         return new(
+                Order,
                 Label,
                 Password,
                 Username,
@@ -65,24 +68,25 @@ public class EntryBox : Box
 
     private void LabelChangedEventHandler(object? sender, EventArgs e)
     {
-        ((Label)EntryManager.Rows[_index]!.Child).Text = Label;
+        ((Label)EntryManager.Rows[Index]!.Child).Text = Label;
     }
 
     private void DeleteEventHandler(object? sender, EventArgs e)
     {
         this.Destroy();
-        EntryManager.Rows[_index]!.Destroy();
+        EntryManager.Rows[Index]!.Destroy();
 
-        Scene.Scenes[_index + 1] = null;
-        EntryManager.Boxes[_index] = null;
-        EntryManager.Rows[_index] = null;
+        Scene.Scenes[Index + 1] = null;
+        EntryManager.Boxes[Index] = null;
+        EntryManager.Rows[Index] = null;
 
         EntryManager.OnDelete();
     }
 
-    public EntryBox(int index, Data.Entry entry)
+    public EntryBox(int order, int index, Data.Entry entry)
     {
-        _index = index;
+        Order = order;
+        Index = index;
 
         Orientation = Orientation.Vertical;
         Margin = 20;
@@ -165,16 +169,26 @@ public class EntryRow : ListBoxRow
 {
     private int _index;
 
-    public EntryRow(int index, ListBox rowParent, string label)
+    public new int Index
     {
-        _index = index;
-        Name = $"{_index}";
+        get => _index;
+        set { _index = value; Name = $"{_index}"; }
+    }
+
+    public string Label
+    {
+        get => ((Label)Child).Text;
+    }
+
+    public EntryRow(int index, string label)
+    {
+        Index = index;
 
         var entryLabel = new Label(label);
 
         this.Add(entryLabel);
-        rowParent.Add(this);
-        rowParent.ShowAll();
+        EntryManager.RowParent.Add(this);
+        EntryManager.RowParent.ShowAll();
     }
 }
 
@@ -186,6 +200,10 @@ public class EntryManager
     public static List<EntryBox?> Boxes = new();
     public static List<EntryRow?> Rows = new();
 
+    public static Scene InitialScreen;
+    public static ListBox RowParent;
+
+    private static int _highestOrder = 0;
     private static int _currentIndex = 0;
     public int Index;
 
@@ -223,18 +241,82 @@ public class EntryManager
         return true;
     }
 
-    public EntryManager(ListBox rowParent, Data.Entry entry)
+    public static void Sort()
     {
+        EntryRow selectedRow = (EntryRow)RowParent.SelectedRow;
+        RowParent.Children.ToList().ForEach(child => RowParent.Remove(child));
+
+        List<EntryBox> boxes = new();
+        foreach (EntryBox? box in Boxes) if (box != null) boxes.Add(box);
+
+        switch (Config.SortMethod)
+        {
+            case Config.Sort.Creation:
+                {
+                    boxes.Sort((box1, box2) => { if (box1.Order > box2.Order) return 1; else return -1; });
+                    break;
+                }
+            case Config.Sort.ReverseCreation:
+                {
+                    boxes.Sort((box1, box2) => { if (box1.Order > box2.Order) return 1; else return -1; });
+                    boxes.Reverse();
+                    break;
+                }
+            case Config.Sort.Alphabet:
+                {
+                    boxes.Sort((box1, box2) => string.Compare(box1.Label, box2.Label, true));
+                    break;
+                }
+            case Config.Sort.ReverseAlphabet:
+                {
+                    boxes.Sort((box1, box2) => string.Compare(box1.Label, box2.Label, true));
+                    boxes.Reverse();
+                    break;
+                }
+        }
+        boxes.ForEach(box => Console.WriteLine(box.ToEntry().Order));
+
+        Boxes.Clear();
+        Rows.Clear();
+        _currentIndex = 0;
+
+        Scene.Index = 0;
+        Scene.Scenes.Clear();
+        Scene.Scenes.Add(InitialScreen);
+
+        foreach (EntryBox box in boxes) new EntryManager(box.ToEntry());
+        foreach (EntryRow row in Rows) if (row.Label == selectedRow.Label)
+            {
+                RowParent.SelectRow(row);
+                Scene.Index = Int32.Parse(row.Name) + 1;
+                break;
+            }
+    }
+
+    public static void Reset()
+    {
+        _highestOrder = 0;
+        _currentIndex = 0;
+        Rows.Clear();
+        Boxes.Clear();
+    }
+
+    public EntryManager(Data.Entry entry)
+    {
+        if (entry.Order == _highestOrder) _highestOrder++;
+        else _highestOrder = entry.Order;
         Index = _currentIndex;
         _currentIndex++;
 
-        Row = new(Index, rowParent, entry.Label);
+        Row = new(Index, entry.Label);
         Rows.Add(Row);
 
-        Box = new EntryBox(Index, entry);
+        Box = new EntryBox(_highestOrder, Index, entry);
         Boxes.Add(Box);
         Scene.Scenes.Add(new(Box, SceneChangeEventHandler, SceneChangeEventHandler));
     }
+
+    public EntryManager() : this(new(_highestOrder, "", "")) { }
 }
 
 

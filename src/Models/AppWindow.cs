@@ -12,6 +12,8 @@ public class AppWindow : Window
 
     [UI] private Button _newBtn;
 
+    [UI] private Button _sortBtn;
+
     [UI] private SearchEntry _passwordListSearch;
     [UI] private ListBox _passwordSelectionList;
 
@@ -78,17 +80,30 @@ public class AppWindow : Window
     {
         _passwordSelectionList.Children.ToList().ForEach((child) => _passwordSelectionList.Remove(child));
 
-        string? search = _passwordListSearch.Text;
+        string search = _passwordListSearch.Text;
 
-        if (search == null) foreach (EntryRow? row in EntryManager.Rows) _passwordSelectionList.Add(row);
+        if (search == "") foreach (EntryRow? row in EntryManager.Rows) _passwordSelectionList.Add(row);
         else foreach (EntryRow? row in EntryManager.Rows)
-                if (row != null && ((Label)((Box)row.Child).Children[0]).Text.Contains(search))
+                if (row != null && ((Label)row.Child).Text.Contains(search))
                     _passwordSelectionList.Add(row);
+    }
+
+    private void SortEventHandler(object? sender, EventArgs e)
+    {
+        if (_passwordListSearch.Text == "")
+        {
+            _container.Remove(Scene.Current().Model);
+
+            EntryManager.Sort();
+
+            _container.Add(Scene.Current().Model);
+            _container.ReorderChild(_controlButtonContainer, 1);
+        }
     }
 
     private void NewEntryEventHandler(object? sender, EventArgs e)
     {
-        var em = new EntryManager(_passwordSelectionList, new("", ""));
+        var em = new EntryManager();
         _passwordSelectionList.SelectRow(em.Row);
 
         _container.Remove(Scene.Current().Model);
@@ -162,11 +177,15 @@ public class AppWindow : Window
 
         Scene.Index = 0;
         Scene.Scenes = new(new Scene[] { new(_initialScreen) });
+        EntryManager.InitialScreen = new(_initialScreen);
+        EntryManager.RowParent = _passwordSelectionList;
+
 
         _configureBtn.Clicked += NewConfigureEventHandler;
         _generatorBtn.Clicked += NewGeneratorEventHandler;
 
         _newBtn.Clicked += NewEntryEventHandler;
+        _sortBtn.Clicked += SortEventHandler;
 
         _backBtn.Clicked += BackEventHandler;
         _nextBtn.Clicked += NextEventHandler;

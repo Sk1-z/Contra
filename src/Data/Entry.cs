@@ -3,6 +3,7 @@ namespace Contra.Data;
 [Serializable]
 public class Entry
 {
+    public int Order;
     public string Label;
     public string Password;
     public string? Username;
@@ -12,6 +13,7 @@ public class Entry
     public Entry() { }
 
     public Entry(
+            int order,
             string label,
             string password,
             string? username = null,
@@ -19,6 +21,7 @@ public class Entry
             string? note = null
     )
     {
+        Order = order;
         Label = label;
         Username = username;
         Password = password;

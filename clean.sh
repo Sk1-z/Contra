@@ -1,4 +1,3 @@
-rm -r test
-rm windows.zip
-rm linux.tar
-rm mac.tar
+rm -r test windows.zip linux.tar mac.tar
+
+dotnet clean --configuration=Release

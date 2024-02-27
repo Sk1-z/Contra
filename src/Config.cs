@@ -41,10 +41,19 @@ Path + @"user.dat";
         None,
     }
 
+    public enum Sort
+    {
+      Alphabet,
+      ReverseAlphabet,
+      Creation,
+      ReverseCreation
+    }
+
     public class Fields
     {
         public bool Setup { get; set; }
         public SecurityLevel Security { get; set; }
+        public Sort SortMethod {get; set; }
     }
 
     private static Fields? _internal = null;
@@ -59,6 +68,12 @@ Path + @"user.dat";
     {
         get => _internal!.Security;
         set { _internal!.Security = value; Set(); }
+    }
+
+    public static Sort SortMethod
+    {
+      get => _internal!.SortMethod;
+      set { _internal!.SortMethod = value; Set(); }
     }
 
     public static string Check
@@ -76,7 +91,8 @@ Path + @"user.dat";
         _internal = new Fields
         {
             Setup = false,
-            Security = SecurityLevel.None
+            Security = SecurityLevel.None,
+            SortMethod = Sort.Creation
         };
 
         Check = "Contrasena";

@@ -235,6 +235,7 @@ public class Setup : LoginWindow
     public Setup() : base(new Builder("LoginWindow.Setup.glade"))
     {
         Config.Check = "Contrasena";
+        Scene.Index = 0;
         Scene.Scenes = new(new Scene[] {
             new(_methodSelectBox),
             new(_noneBox)

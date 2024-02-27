@@ -11,6 +11,12 @@ public class ConfigureWindow : Window
     [UI] private RadioButton _passwordBtn;
     [UI] private RadioButton _noneBtn;
 
+    [UI] private RadioButton _creationBtn;
+    [UI] private RadioButton _rCreationBtn;
+    [UI] private RadioButton _alphabetBtn;
+    [UI] private RadioButton _rAlphabetBtn;
+
+
     [UI] private Button _resetBtn;
 
     private void NewKeyEventHandler(object? sender, EventArgs e)
@@ -80,8 +86,30 @@ public class ConfigureWindow : Window
         }
     }
 
+    private void SortByCreationEventHander(object? sender, EventArgs e)
+    {
+        if (_creationBtn.Active) Config.SortMethod = Config.Sort.Creation;
+    }
+
+    private void SortByRCreationEventHandler(object? sender, EventArgs e)
+    {
+        if (_rCreationBtn.Active) Config.SortMethod = Config.Sort.ReverseCreation;
+    }
+
+    private void SortByAlphabetEventHandler(object? sender, EventArgs e)
+    {
+        if (_alphabetBtn.Active) Config.SortMethod = Config.Sort.Alphabet;
+    }
+
+    private void SortByRAlphabetEventHandler(object? sender, EventArgs e)
+    {
+        if (_rAlphabetBtn.Active) Config.SortMethod = Config.Sort.ReverseAlphabet;
+    }
+
     private void ResetEventHandler(object? sender, EventArgs e)
     {
+        EntryManager.Reset();
+
         File.Delete(Config.ConfigPath);
         File.Delete(Config.CheckPath);
         File.Delete(Config.DataPath);
@@ -122,9 +150,38 @@ public class ConfigureWindow : Window
                 }
         }
 
+        switch (Config.SortMethod)
+        {
+            case Config.Sort.Creation:
+                {
+                    _creationBtn.Active = true;
+                    break;
+                }
+            case Config.Sort.ReverseCreation:
+                {
+                    _rCreationBtn.Active = true;
+                    break;
+                }
+            case Config.Sort.Alphabet:
+                {
+                    _alphabetBtn.Active = true;
+                    break;
+                }
+            case Config.Sort.ReverseAlphabet:
+                {
+                    _rAlphabetBtn.Active = true;
+                    break;
+                }
+        }
+
         _keyBtn.Clicked += NewKeyEventHandler;
         _passwordBtn.Clicked += NewPasswordEventHandler;
         _noneBtn.Clicked += NoMethodEventHandler;
+
+        _creationBtn.Clicked += SortByCreationEventHander;
+        _rCreationBtn.Clicked += SortByRCreationEventHandler;
+        _alphabetBtn.Clicked += SortByAlphabetEventHandler;
+        _rAlphabetBtn.Clicked += SortByRAlphabetEventHandler;
 
         _resetBtn.Clicked += ResetEventHandler;
     }
